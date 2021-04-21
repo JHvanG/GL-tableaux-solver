@@ -10,9 +10,11 @@ class Generator(object):
         self.resulting_formula = None
         self.position = 0
 
-        while True:
-            self.create_formula(self.total_length)
-            self.total_length += 1
+    def get_total_length(self):
+        return self.total_length
+
+    def set_total_length(self, new_length):
+        self.total_length = new_length
 
     def create_formula(self, formula_length):
         if formula_length == 1:
@@ -36,9 +38,9 @@ class Generator(object):
                 # note that the first AND second formulas are set to None, these are filled in recursively
                 self.update_resulting_formula(conjunction.Conjunction(None, None))
                 # TODO: this currently assumes a binary connective is used!!!
-                self.create_formula(self, len_one)
+                self.create_formula(len_one)
                 self.position += (formula_length - len_two)
-                self.create_formula(self, len_two)
+                self.create_formula(len_two)
                 self.position -= (formula_length - len_two)
 
     # this method is responsible for keeping the resulting formula up to date
@@ -56,3 +58,7 @@ class Generator(object):
 
 if __name__ == "__main__":
     generator = Generator()
+    while True:
+        generator.create_formula(generator.get_total_length())
+        print("Hello")
+        generator.set_total_length(generator.get_total_length() + 1)
