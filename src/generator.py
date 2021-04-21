@@ -1,4 +1,4 @@
-from src.util import negation, conjunction
+from util import negation, conjunction
 from util import formula
 from util import connective_enum
 
@@ -43,6 +43,9 @@ class Generator(object):
                 self.create_formula(len_two)
                 self.position -= (formula_length - len_two)
 
+                len_one -= 1
+                len_two += 1
+
     # this method is responsible for keeping the resulting formula up to date
     def update_resulting_formula(self, filler):
         if self.resulting_formula is None:
@@ -55,10 +58,13 @@ class Generator(object):
         if self.position == self.total_length:
             print(self.resulting_formula.convert_to_string())
 
+    def start(self):
+        while True:
+            self.create_formula(self.total_length)
+            print("Hello")
+            self.total_length += 1
+
 
 if __name__ == "__main__":
     generator = Generator()
-    while True:
-        generator.create_formula(generator.get_total_length())
-        print("Hello")
-        generator.set_total_length(generator.get_total_length() + 1)
+    generator.start()

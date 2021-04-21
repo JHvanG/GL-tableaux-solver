@@ -1,4 +1,4 @@
-from src.util.formula import Formula
+from util.formula import Formula
 
 
 class Conjunction(Formula):
