@@ -1,7 +1,9 @@
-class Connective(object):
-    def __init__(self, character, binary = True, formula_one, formula_two = None):
+class Formula(object):
+    def __init__(self, character, formula_one, is_atom=False, binary=True, formula_two=None):
         # character representing connective
         self.character = character
+        # boolean for a single atom
+        self.is_atom = is_atom
         # boolean for binary connective
         self.binary = binary
         # connected formulae
@@ -23,5 +25,4 @@ class Connective(object):
     # each connective has a get next connective method
     # all gets are inherited from here
 
-    def find_unique(self):
-        
+    # def find_unique(self):
