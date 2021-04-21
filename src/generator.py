@@ -24,7 +24,7 @@ class Generator(object):
         elif formula_length == 2:
             # TODO: also add box and diamond based on what has been used using the ENUM (+1)
             self.position += 2
-            self.update_resulting_formula(formula.Formula("~", "A", None, False, False))
+            self.update_resulting_formula(negation.Negation("A"))
             self.check_complete()
             self.position -= 2
         else:
@@ -34,23 +34,24 @@ class Generator(object):
 
             while len_one >= 1:
                 # note that the first AND second formulas are set to None, these are filled in recursively
-                self.update_resulting_formula(formula.Formula("&", None, None, False, True))
-                #TODO: this currently assumes a binary connective is used!!!
+                self.update_resulting_formula(conjunction.Conjunction(None, None))
+                # TODO: this currently assumes a binary connective is used!!!
                 self.create_formula(self, len_one)
                 self.position += (formula_length - len_two)
                 self.create_formula(self, len_two)
                 self.position -= (formula_length - len_two)
 
     # this method is responsible for keeping the resulting formula up to date
-    def update_resulting_formula(self, formula):
+    def update_resulting_formula(self, filler):
         if self.resulting_formula is None:
-            self.resulting_formula = formula
+            self.resulting_formula = filler
         else:
-            self.resulting_formula.fill_in(formula)
+            self.resulting_formula.fill_in(filler)
 
+    # this method checks whether a complete formula is produced and prints if that is the case
     def check_complete(self):
         if self.position == self.total_length:
-            self.resulting_formula.print_formula()
+            print(self.resulting_formula.convert_to_string())
 
 
 if __name__ == "__main__":

@@ -13,6 +13,9 @@ class Formula(object):
     def get_character(self):
         return self.character
 
+    def get_is_atom(self):
+        return self.is_atom
+
     def get_binary(self):
         return self.binary
 
@@ -49,10 +52,24 @@ class Formula(object):
         return False
 
     # method to print the formula with proper brackets in place
-    def print_formula(self):
+    def convert_to_string(self):
+        if self.is_atom:
+            return str(self.formula_one)
+        elif not self.binary:
+            return self.character + self.formula_one.convert_to_string()
+        else:
+            if self.formula_one.get_binary():
+               formula_as_string = "(" + self.formula_one.convert_to_string() + ")"
+            else:
+                formula_as_string = self.formula_one.convert_to_string()
 
+            formula_as_string += self.character
 
-    # each connective has a get next connective method
-    # all gets are inherited from here
+            if self.formula_two.get_binary():
+                formula_as_string += "(" + self.formula_two.convert_to_string() + ")"
+            else:
+                formula_as_string += self.formula_two.convert_to_string()
+
+            return formula_as_string
 
     # def find_unique(self):
