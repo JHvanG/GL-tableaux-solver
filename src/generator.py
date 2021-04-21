@@ -35,6 +35,7 @@ class Generator(object):
             len_two = formula_length - len_one - 1
 
             while len_one >= 1:
+                print("Hello")
                 # note that the first AND second formulas are set to None, these are filled in recursively
                 self.update_resulting_formula(conjunction.Conjunction(None, None))
                 # TODO: this currently assumes a binary connective is used!!!
@@ -61,7 +62,6 @@ class Generator(object):
     def start(self):
         while True:
             self.create_formula(self.total_length)
-            print("Hello")
             self.total_length += 1
 
 
