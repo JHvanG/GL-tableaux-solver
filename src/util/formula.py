@@ -48,6 +48,10 @@ class Formula(object):
         
         return False
 
+    # method to print the formula with proper brackets in place
+    def print_formula(self):
+
+
     # each connective has a get next connective method
     # all gets are inherited from here
 
