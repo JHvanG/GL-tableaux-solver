@@ -1,4 +1,4 @@
-from src.util import negation
+from src.util import negation, conjunction
 from util import formula
 from util import connective_enum
 
@@ -6,53 +6,40 @@ from util import connective_enum
 class Generator(object):
     def __init__(self):
         self.total_length = 1
+        self.intermediate_formula = None
         self.resulting_formula = None
+        self.position = 0
 
         while True:
             self.create_formula()
 
-    def create_formula(self, formula_length):
-
-        if formula_length == 0:
-            return None
-        elif formula_length == 1:
+    def create_formula(self, initial_length, formula_length):
+        if formula_length == 1:
             # TODO: have more than one letter
-            new_form = formula.Formula(None, "A", True, False)
-            return new_form
+            self.position += 1
+            self.update_resulting_formula(formula.Formula(None, "A", None, True, False))
+            self.position -= 1
         elif formula_length == 2:
             # TODO: also add box and diamond based on what has been used using the ENUM (+1)
-            new_form = negation.Negation("A")
-            return new_form
+            self.position += 2
+            self.update_resulting_formula(formula.Formula("~", "A", None, False, False))
+            self.position -= 2
         else:
+            # TODO: make sure any connective can be used here
             len_one = formula_length - 2
             len_two = formula_length - len_one
+
             while len_one > 1:
-                # TODO: also add other binary connectives based on what has been used using the ENUM (+1)
-                new_form = formula.Conjunction(self.create_formula(len_one), self.create_formula(len_two))
-                len_one -= 1
-                len_two += 1
+                # note that the first AND second formulas are set to None, these are filled in recursively
+                self.update_resulting_formula(formula.Formula("&", None, None, False, True))
 
-        """
-        The plan is to continuously increase the length of the formula once the first formula is done.
-        First a sequence of negations
-        Might be best to do this in a recursive manner? first n, then n-1 or n-1 or whatever?
-        Can also do like: A & B will result in len_A = n - 2, then len_A = n - 3, etc. until len_A = 1, len_B will then
-        be the remaining element.
-        For all single connectives this is much simpler and based on priority: neg, box, diamond
-        For all binary connectives this is con, dis, imp, bi-imp
 
-        Generation is done by: formula --> connective and one or two formula(s) --> both into connectives again...
-        This continues until length is 0
-
-        first attempt whether a connective is suitable, then a formula
-        
-        might be more logical to start at the back?
-        
-        """
-
-        # this function will generate a new formula of same length as last unless all are already present
-        # then it will increase in length and check for all connectives again
-        # first only with 1 letter
+    # this method is responsible for keeping the resulting formula up to date
+    def update_resulting_formula(self, formula):
+        if self.resulting_formula is None:
+            self.resulting_formula = formula
+        else:
+            self.resulting_formula.fill_in(formula)
 
 
 if __name__ == "__main__":
