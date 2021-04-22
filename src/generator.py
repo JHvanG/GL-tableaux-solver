@@ -6,9 +6,9 @@ from util import connective_enum
 class Generator(object):
     def __init__(self):
         self.total_length = 1
+        self.position = 0
         self.intermediate_formula = None
         self.resulting_formula = None
-        self.position = 0
 
     def get_total_length(self):
         return self.total_length
@@ -58,6 +58,13 @@ class Generator(object):
     def check_complete(self):
         if self.position == self.total_length:
             print(self.resulting_formula.convert_to_string())
+            # TODO: remove the last formula, either through a method or by setting a boolean
+            """
+            for this a method needs to be designed that removes the deepest nested connective
+                for binary connectives this should go right unless this is none, then left should be investigated
+                if both are None, remove the connective itself and return
+                for unary connectives this should only remove itself if its formula is None
+            """
 
     def start(self):
         while True:
