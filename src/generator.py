@@ -66,11 +66,16 @@ class Generator(object):
                 for unary connectives this should only remove itself if its formula is None
             """
 
-    def remove_element(self):
+    # this method removes the last element in depth first manner
+    def remove_element(self, formula):
         # remove last element of binary connective
         # else remove first element
         # else remove entire connective
         # do this in a depth first manner
+
+        if formula.binary and not formula.get_formula_two() is None:
+            # check formula
+
 
         
 
