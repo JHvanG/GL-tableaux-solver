@@ -1,3 +1,4 @@
+import pickle
 from util import negation, conjunction
 from util import formula
 from util import connective_enum
@@ -79,7 +80,8 @@ class Generator(object):
 
     # This method will produce and save the two atoms A and B
     def generate_atoms(self):
-
+        atom_one = formula.Formula(None, "A", None, True, False)
+        atom_two = formula.Formula(None, "B", None, True, False)
 
     # This method will produce and save combinations of the previously saved formulas
     def generate_combinations(self, formula_complexity):
