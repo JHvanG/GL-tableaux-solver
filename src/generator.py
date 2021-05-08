@@ -53,7 +53,9 @@ class Generator(object):
         with open(filepath, 'rb') as file:
             while True:
                 try:
-                    print(pickle.load(file))
+                    temp = pickle.load(file)
+                    if isinstance(temp, formula.Formula):
+                        print(temp.get_formula_one())
                 except EOFError:
                     break
 
