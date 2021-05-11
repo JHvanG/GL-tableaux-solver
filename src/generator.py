@@ -1,6 +1,5 @@
-from util import negation, conjunction
-from util import formula
-from util import connective_enum
+from util import formula, negation, box, diamond, disjunction, conjunction, implication, bi_implication
+from util.connective_enum import ConnectiveType
 from pathlib import Path
 import pickle, os
 
@@ -48,16 +47,47 @@ class Generator(object):
             for form in formula_list:
                 pickle.dump(form, file, pickle.HIGHEST_PROTOCOL)
 
-    def read_from_file(self):
-        filepath = os.path.join(self.storage_path, "formula_set_" + str(self.formula_complexity) + ".form")
+    def read_from_file(self, filepath):
+        formulas = []
         with open(filepath, 'rb') as file:
             while True:
                 try:
                     temp = pickle.load(file)
                     if isinstance(temp, formula.Formula):
-                        print(temp.get_formula_one())
+                        formulas.append(temp)
                 except EOFError:
-                    break
+                    return formulas
+
+    # This method returns a list of all unary connectives based on the formulas of the previous complexity
+    def create_unary_connectives(self):
+        connectives = [ConnectiveType.NEGATION, ConnectiveType.BOX, ConnectiveType.DIAMOND]
+
+        n = self.formula_complexity - 1
+        filepath = os.path.join(self.storage_path, "formula_set_" + str(n) + ".form")
+        previous_formulas = self.read_from_file(filepath)
+
+        formula_list = []
+        for connective in connectives:
+            for form in previous_formulas:
+                new_form = None
+                if connective == ConnectiveType.NEGATION:
+                    new_form = negation.Negation(form)
+                elif connective == ConnectiveType.BOX:
+                    new_form = box.Box(form)
+                elif connective == ConnectiveType.DIAMOND:
+                    new_form = diamond.Diamond(form)
+
+                formula_list.append(new_form)
+
+        return formula_list
+
+    # This method returns a list of all binary connectives based on the formulas of the previous complexity
+    def create_binary_connectives(self):
+        binary_connectives = [ConnectiveType.CONJUNCTION, ConnectiveType.DISJUNCTION,
+                              ConnectiveType.IMPLICATION, ConnectiveType.BIIMPLICATION]
+
+
+    # TODO: include contradiction as well!
 
     # This method will produce and save the two atoms A and B
     def generate_atoms(self):
@@ -68,30 +98,42 @@ class Generator(object):
 
     # This method will produce and save combinations of the previously saved formulas
     def generate_combinations(self):
-        if self.formula_complexity == 1:
-            ''' 
-        Complexity 1:
-            - Unary connectives ~, [] and <> on complexity 0
-        Complexity 2:
-            - Binary connectives &, |, -> and <-> on complexity 0
-            - Unary connectives ~, [] and <> on complexity 1
-        Complexity 3:
-            - Binary connectives on complexity combination of 0 with 2 and combination of 1 with 1
-            - Unary connectives on binary connectives and single unary connectives of complexity 2        
         '''
+        unary: ~, [], <>
+        binary: &, |, ->, <->
+        Complexity 1: unary on {0} and binary on {0,0}
+        Complexity 2: unary on {1} and binary on {0,1} and {1,1}
+        Complexity 3: unary on {2} and binary on {0,2}, {1,2} and {2,2}
+        '''
+
+        min = 0
+        max = self.formula_complexity - 1
+
+        # maybe change this to have the min and max as arguments? simplifies things a bit
+
+        if self.formula_complexity == 1:
+            self.save_to_file(self.create_unary_connectives())
+
+        if self.formula_complexity > 1:
+            new_formulas = []
+
+            new_formulas += self.create_unary_connectives()
+            new_formulas += self.create_binary_connectives()
+
+            self.save_to_file(new_formulas)
+
+
 
     # TODO: Fix method to procedurally generate increasing combinations of past formulae.
     #       Using pickle save past formulae
     def create_formula(self):
-        self.generate_atoms()
-        self.read_from_file()
-        #while self.generator_on:
-        #    if self.formula_complexity == 0:
-        #        self.generate_atoms()
-        #    else:
-        #        self.generate_combinations()
+        while self.generator_on:
+            if self.formula_complexity == 0:
+                self.generate_atoms()
+            else:
+                self.generate_combinations()
 
-            #self.formula_complexity += 1
+            self.formula_complexity += 1
 
 
 if __name__ == "__main__":
