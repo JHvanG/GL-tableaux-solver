@@ -11,10 +11,9 @@ class Conjunction(Formula):
         # TODO: set world of both formulas
         branch.append(self.formula_one)
         branch.append(self.formula_two)
-        print(branch)
         return branch
 
     def branch_negated(self, branch):
-        branch.append([Negation(self.formula_one)])
-        branch.append([Negation(self.formula_two)])
+        from .disjunction import Disjunction
+        branch.append(Disjunction(Negation(self.formula_one), Negation(self.formula_two)))
         return branch

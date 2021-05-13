@@ -13,6 +13,6 @@ class Disjunction(Formula):
         return branch
 
     def branch_negated(self, branch):
-        branch.append(Negation(self.formula_one))
-        branch.append(Negation(self.formula_two))
+        from .conjunction import Conjunction
+        branch.append(Conjunction(Negation(self.formula_one), Negation(self.formula_two)))
         return branch

@@ -6,17 +6,12 @@ class Solver(object):
         self.tree = []
         self.worlds = [1]
         self.relations = []
-        self.valid = False
+        self.open_branch = False
 
-    # This method checks an entire branch on completeness
-    def check_branch(self, branch):
-        # this goes over the entire branch. Upon return the branch is deleted, we can reuse code here!
-        branch_list = branch
-
+    # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
         atoms, branches, conjuncts, disjuncts, implications, biimplications, negations, boxes, diamonds = ([] for i in
                                                                                                            range(9))
-
         if branch:
             for form in branch:
                 if isinstance(form, conjunction.Conjunction):
@@ -38,14 +33,13 @@ class Solver(object):
                         negations.append(form)
                 elif isinstance(form, list):
                     branches.append(form)
-
             return negations + conjuncts + boxes + diamonds + disjuncts + implications + biimplications + branches + atoms
-
         else:
             return None
 
-    def all_rules_applied(self):
-        for rule in self.tree:
+    # This method returns True when all rules in the branch are applied and False if not
+    def all_rules_applied(self, branch):
+        for rule in branch:
             if isinstance(rule, list):
                 return False
             elif isinstance(rule, negation.Negation) or isinstance(rule, box.Box) or isinstance(rule, diamond.Diamond):
@@ -54,40 +48,48 @@ class Solver(object):
             elif (isinstance(rule, conjunction.Conjunction) or isinstance(rule, disjunction.Disjunction)
                   or isinstance(rule, implication.Implication) or isinstance(rule, bi_implication.BiImplication)):
                 return False
-
         return True
 
+    # This method is used to check the validity of a branch
+    def check_branch(self, branch):
+        while branch:
+            #if self.all_rules_applied(branch):
+            #    self.open_branch = True
+            #    return
+            if isinstance(branch[0], formula.Formula):
+                if negation.Negation(branch[0]) in self.tree:
+                    return
+                elif isinstance(branch[0], negation.Negation) and branch[0].get_formula_one() in self.tree:
+                    return
+                elif not branch[0].get_is_atom():
+                    print(branch)
+                    branch = branch[0].branch(branch)
+                    branch.remove(branch[0])
+                    self.order_tree(branch)
+            else:
+                self.check_branch(branch[0])
+                if self.open_branch:
+                    return
+                else:
+                    branch.remove(branch[0])
+                    return
+
+    # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
         # add possibility for world
         self.tree.append(negation.Negation(form))
 
-        while not self.valid:
-            if not self.tree:
-                self.valid = True
-            elif self.all_rules_applied():
-                break
-            elif isinstance(self.tree[0], formula.Formula):
-                next_rule = self.tree[0]
-
-                if negation.Negation(next_rule) in self.tree:
-                    self.valid = True
-                elif isinstance(next_rule, negation.Negation) and next_rule.get_formula_one() in self.tree:
-                    self.valid = True
-                elif not next_rule.get_is_atom():
-                    print(self.tree)
-                    self.tree = next_rule.branch(self.tree)
-                    self.tree.remove(next_rule)
-                    self.order_tree(self.tree)
-            else:
-                self.check_branch(self.tree[0])
-                self.tree.remove(self.tree[0])
-
-        if self.valid:
-            print("yes!")
+        self.check_branch(self.tree)
+        if self.open_branch:
+            print("invalid formula")
+        else:
+            print("valid formula")
 
 
 if __name__ == "__main__":
-    # test = conjunction.Conjunction(formula.Formula(None, "A"), negation.Negation(formula.Formula(None, "A")))
-    test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    # test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
+    # test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
+                                   formula.Formula(None, "A", None, True, False))
     solver = Solver()
     solver.solve_formula(test)

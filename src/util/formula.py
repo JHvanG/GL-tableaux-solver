@@ -1,4 +1,5 @@
 class Formula(object):
+    # TODO: I think I should actually remove all getters and setters
     def __init__(self, character, formula_one, formula_two=None, is_atom=False, binary=True):
         # character representing connective
         self.character = character

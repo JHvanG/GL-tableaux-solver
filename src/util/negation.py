@@ -7,4 +7,8 @@ class Negation(Formula):
         pass
 
     def branch(self, branch):
-        self.formula_one.branch_negated(branch)
+        return self.formula_one.branch_negated(branch)
+
+    def branch_negated(self, branch):
+        branch.append(self.formula_one)
+        return branch
