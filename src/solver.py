@@ -38,6 +38,7 @@ class Solver(object):
             return None
 
     # This method returns True when all rules in the branch are applied and False if not
+    '''
     def all_rules_applied(self, branch):
         for rule in branch:
             if isinstance(rule, list):
@@ -49,6 +50,7 @@ class Solver(object):
                   or isinstance(rule, implication.Implication) or isinstance(rule, bi_implication.BiImplication)):
                 return False
         return True
+    '''
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
@@ -61,12 +63,15 @@ class Solver(object):
                     return
                 elif isinstance(branch[0], negation.Negation) and branch[0].get_formula_one() in self.tree:
                     return
-                elif not branch[0].get_is_atom():
+                elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
                     print(branch)
                     branch = branch[0].branch(branch)
                     branch.remove(branch[0])
                     self.order_tree(branch)
-            else:
+                else:
+                    self.open_branch = True
+                    return
+            elif isinstance(branch[0], list):
                 self.check_branch(branch[0])
                 if self.open_branch:
                     return
@@ -87,9 +92,9 @@ class Solver(object):
 
 
 if __name__ == "__main__":
-    # test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
-    # test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
-    test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
-                                   formula.Formula(None, "A", None, True, False))
+    test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
+    #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
+                                   #formula.Formula(None, "A", None, True, False))
     solver = Solver()
     solver.solve_formula(test)
