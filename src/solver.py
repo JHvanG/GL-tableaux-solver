@@ -81,7 +81,7 @@ class Solver(object):
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        # add possibility for world
+        # TODO: add possibility for world
         self.tree.append(negation.Negation(form))
 
         self.check_branch(self.tree)
