@@ -12,34 +12,6 @@ class Generator(object):
         self.formula_complexity = 0
         self.storage_path = os.path.join(Path(__file__).parents[1], "storage")
 
-    def set_generator_on(self, value):
-        self.generator_on = value
-
-    def get_total_length(self):
-        return self.total_length
-
-    def set_total_length(self, new_length):
-        self.total_length = new_length
-
-    # this method is responsible for keeping the resulting formula up to date
-    def update_resulting_formula(self, filler):
-        if self.resulting_formula is None:
-            self.resulting_formula = filler
-        else:
-            self.resulting_formula.fill_in(filler)
-
-    # this method checks whether a complete formula is produced and prints if that is the case
-    def check_complete(self):
-        if self.position == self.total_length:
-            print(self.resulting_formula.convert_to_string())
-            # TODO: remove the last formula, either through a method or by setting a boolean
-            """
-            for this a method needs to be designed that removes the deepest nested connective
-                for binary connectives this should go right unless this is none, then left should be investigated
-                if both are None, remove the connective itself and return
-                for unary connectives this should only remove itself if its formula is None
-            """
-
     # This method is responsible for saving the formulas a .form file using pickle
     def save_to_file(self, formula_list):
         filepath = os.path.join(self.storage_path, "formula_set_" + str(self.formula_complexity) + ".form")
@@ -157,5 +129,5 @@ class Generator(object):
 
 if __name__ == "__main__":
     generator = Generator()
-    generator.set_generator_on(True)
+    generator.generator_on = True
     generator.create_formula()

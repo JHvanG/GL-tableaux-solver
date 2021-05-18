@@ -27,7 +27,7 @@ class Solver(object):
                 elif isinstance(form, diamond.Diamond):
                     diamonds.append(form)
                 elif isinstance(form, negation.Negation):
-                    if form.get_formula_one().get_is_atom():
+                    if form.formula_one.is_atom:
                         atoms.append(form)
                     else:
                         negations.append(form)
@@ -55,17 +55,14 @@ class Solver(object):
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
         while branch:
-            #if self.all_rules_applied(branch):
-            #    self.open_branch = True
-            #    return
             if isinstance(branch[0], formula.Formula):
                 if negation.Negation(branch[0]) in self.tree:
                     return
-                elif isinstance(branch[0], negation.Negation) and branch[0].get_formula_one() in self.tree:
+                elif isinstance(branch[0], negation.Negation) and branch[0].formula_one in self.tree:
                     return
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
                     print(branch)
-                    branch = branch[0].branch(branch)
+                    branch = branch[0].branch(branch, self)
                     branch.remove(branch[0])
                     self.order_tree(branch)
                 else:
@@ -81,10 +78,8 @@ class Solver(object):
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        # TODO: add possibility for world
-        #       add all rules
-        #       check that all negated rules are handled in the same way
-        self.tree.append(negation.Negation(form))
+        # TODO: add transitivity
+        self.tree.append(negation.Negation(form, self.worlds[0]))
 
         self.check_branch(self.tree)
         if self.open_branch:
@@ -94,9 +89,11 @@ class Solver(object):
 
 
 if __name__ == "__main__":
-    test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
+    #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
     #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
                                    #formula.Formula(None, "A", None, True, False))
+    #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
     solver = Solver()
     solver.solve_formula(test)
