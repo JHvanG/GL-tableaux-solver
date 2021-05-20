@@ -11,7 +11,7 @@ class Box(Formula):
         i = self.world
         # TODO: what if there is no unapplied rule? -> if box is last rule before atoms, remove box rule
         for relation in solver.relations:
-            if relation[0] == i and not relation in self.applied_relations:
+            if relation[0] == i and relation not in self.applied_relations:
                 j = relation[1]
 
                 self.applied_relations.append([i, j])

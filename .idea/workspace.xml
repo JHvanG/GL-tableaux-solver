@@ -109,7 +109,7 @@
       <workItem from="1620029315984" duration="1866000" />
       <workItem from="1620394549071" duration="5032000" />
       <workItem from="1620500017195" duration="6458000" />
-      <workItem from="1621319884597" duration="9501000" />
+      <workItem from="1621319884597" duration="17767000" />
     </task>
     <servers />
   </component>
@@ -117,7 +117,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/GL_tableaux_solver$solver.coverage" NAME="solver Coverage Results" MODIFIED="1621330521293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GL_tableaux_solver$solver.coverage" NAME="solver Coverage Results" MODIFIED="1621412864641" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GL_tableaux_solver$generator.coverage" NAME="generator Coverage Results" MODIFIED="1621320486943" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
   </component>
 </project>

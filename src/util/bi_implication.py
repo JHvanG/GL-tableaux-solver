@@ -9,8 +9,10 @@ class BiImplication(Formula):
 
     def branch(self, branch):
         # TODO: add world number to new formula
-        branch.append([self.formula_one, self.formula_two])
         branch.append([Negation(self.formula_two, self.world), Negation(self.formula_two, self.world)])
+        self.formula_one.world = self.world
+        self.formula_two.world = self.world
+        branch.append([self.formula_one, self.formula_two])
         return branch
 
     def branch_negated(self, branch):

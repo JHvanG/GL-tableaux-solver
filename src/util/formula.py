@@ -18,7 +18,8 @@ class Formula(object):
             return False
         else:
             return self.character == other.character and self.formula_one == other.formula_one and \
-                   self.formula_two == other.formula_two and self.is_atom == other.is_atom and self.binary == other.binary
+                   self.formula_two == other.formula_two and self.is_atom == other.is_atom and \
+                   self.binary == other.binary and self.world == other.world
 
     # method to fill in the first empty spot in a formula being generated
     # returns true if a None element is filled in, else it returns false

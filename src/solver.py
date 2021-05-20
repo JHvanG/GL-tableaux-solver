@@ -8,6 +8,20 @@ class Solver(object):
         self.relations = []
         self.open_branch = False
 
+    # This method applies the transitivity rule to the relations
+    def apply_transitivity(self):
+        for relation_a in self.relations:
+            for relation_b in self.relations:
+                if relation_a != relation_b:
+                    if relation_a[0] == relation_b[1]:
+                        new_relation = [relation_a[0], relation_b[1]]
+                        if new_relation not in self.relations:
+                            self.relations.append(new_relation)
+                    elif relation_a[1] == relation_b[0]:
+                        new_relation = [relation_b[0], relation_a[1]]
+                        if new_relation not in self.relations:
+                            self.relations.append(new_relation)
+
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
         atoms, branches, conjuncts, disjuncts, implications, biimplications, negations, boxes, diamonds = ([] for i in
@@ -61,7 +75,7 @@ class Solver(object):
                 elif isinstance(branch[0], negation.Negation) and branch[0].formula_one in self.tree:
                     return
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
-                    print(branch)
+                    print(branch[0].convert_to_string(), branch[0].world)
                     branch = branch[0].branch(branch, self)
                     branch.remove(branch[0])
                     self.order_tree(branch)

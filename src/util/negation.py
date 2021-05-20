@@ -7,6 +7,7 @@ class Negation(Formula):
         pass
 
     def branch(self, branch, solver):
+        self.formula_one.world = self.world
         return self.formula_one.branch_negated(branch, solver)
 
     def branch_negated(self, branch, solver):
