@@ -24,42 +24,36 @@ class Solver(object):
 
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
-        atoms, branches, conjuncts, disjuncts, implications, biimplications, negations, boxes, diamonds = ([] for i in
-                                                                                                           range(9))
-
-        #TODO: CHANGE ORDERING -> not all negations first!
+        rank1, rank2, rank3, rank4, rank5, rank6 = ([] for i in range(6))
 
         if branch:
             for form in branch:
                 if isinstance(form, conjunction.Conjunction):
-                elif isinstance(form, disjunction.Disjunction):
+                    rank1.append(form)
+                elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or isinstance(form, bi_implication.BiImplication):
+                    rank2.append(form)
                 elif isinstance(form, box.Box):
+                    rank3.append(form)
                 elif isinstance(form, diamond.Diamond):
+                    rank4.append(form)
                 elif isinstance(form, negation.Negation):
-                elif isinstance(form, list  ):
-
-        if branch:
-            for form in branch:
-                if isinstance(form, conjunction.Conjunction):
-                    conjuncts.append(form)
-                elif isinstance(form, disjunction.Disjunction):
-                    disjuncts.append(form)
-                elif isinstance(form, implication.Implication):
-                    implications.append(form)
-                elif isinstance(form, bi_implication.BiImplication):
-                    biimplications.append(form)
-                elif isinstance(form, box.Box):
-                    boxes.append(form)
-                elif isinstance(form, diamond.Diamond):
-                    diamonds.append(form)
-                elif isinstance(form, negation.Negation):
-                    if form.formula_one.is_atom:
-                        atoms.append(form)
-                    else:
-                        negations.append(form)
+                    new_form = form.formula_one
+                    if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication):
+                        rank1.append(form)
+                    elif isinstance(new_form, conjunction.Conjunction) or isinstance(new_form, bi_implication.BiImplication):
+                        rank2.append(form)
+                    elif isinstance(new_form, diamond.Diamond):
+                        rank3.append(form)
+                    elif isinstance(new_form, box.Box):
+                        rank4.append(form)
+                    elif new_form.is_atom:
+                        rank6.append(form)
                 elif isinstance(form, list):
-                    branches.append(form)
-            return negations + conjuncts + boxes + diamonds + disjuncts + implications + biimplications + branches + atoms
+                    rank5.append(form)
+                elif form.is_atom:
+                    rank6.append(form)
+
+            return rank1 + rank2 + rank3 + rank4 + rank5 + rank6
         else:
             return None
 
@@ -92,6 +86,7 @@ class Solver(object):
     def solve_formula(self, form):
         # TODO: add transitivity
         #       avoid infinite branches
+        #       implement sleep of box operator
         self.tree.append(negation.Negation(form, self.worlds[0]))
 
         self.check_branch(self.tree)
