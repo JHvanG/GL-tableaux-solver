@@ -26,6 +26,9 @@ class Solver(object):
     def order_tree(self, branch):
         atoms, branches, conjuncts, disjuncts, implications, biimplications, negations, boxes, diamonds = ([] for i in
                                                                                                            range(9))
+
+        #TODO: CHANGE ORDERING
+
         if branch:
             for form in branch:
                 if isinstance(form, conjunction.Conjunction):
@@ -51,23 +54,9 @@ class Solver(object):
         else:
             return None
 
-    # This method returns True when all rules in the branch are applied and False if not
-    '''
-    def all_rules_applied(self, branch):
-        for rule in branch:
-            if isinstance(rule, list):
-                return False
-            elif isinstance(rule, negation.Negation) or isinstance(rule, box.Box) or isinstance(rule, diamond.Diamond):
-                if not rule.get_formula_one().get_is_atom():
-                    return False
-            elif (isinstance(rule, conjunction.Conjunction) or isinstance(rule, disjunction.Disjunction)
-                  or isinstance(rule, implication.Implication) or isinstance(rule, bi_implication.BiImplication)):
-                return False
-        return True
-    '''
-
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
+        # TODO: negation of formula is checked incorrectly at world num
         while branch:
             if isinstance(branch[0], formula.Formula):
                 if negation.Negation(branch[0]) in self.tree:
@@ -93,6 +82,7 @@ class Solver(object):
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
         # TODO: add transitivity
+        #       avoid infinite branches
         self.tree.append(negation.Negation(form, self.worlds[0]))
 
         self.check_branch(self.tree)
