@@ -27,7 +27,16 @@ class Solver(object):
         atoms, branches, conjuncts, disjuncts, implications, biimplications, negations, boxes, diamonds = ([] for i in
                                                                                                            range(9))
 
-        #TODO: CHANGE ORDERING
+        #TODO: CHANGE ORDERING -> not all negations first!
+
+        if branch:
+            for form in branch:
+                if isinstance(form, conjunction.Conjunction):
+                elif isinstance(form, disjunction.Disjunction):
+                elif isinstance(form, box.Box):
+                elif isinstance(form, diamond.Diamond):
+                elif isinstance(form, negation.Negation):
+                elif isinstance(form, list  ):
 
         if branch:
             for form in branch:
