@@ -68,8 +68,18 @@ class Solver(object):
                     return
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
                     print(branch[0].convert_to_string(), branch[0].world)
-                    branch = branch[0].branch(branch, self)
-                    branch.remove(branch[0])
+                    if isinstance(branch[0], box.Box):
+                        if not branch[0].is_applied:
+                            branch = branch[0].branch(branch, self)
+                            branch[0].is_applied = True
+                            # TODO: adjust sorting
+                            #       reset is_applied booleans when diamond rule is applied
+                        else:
+                            # in this case, we encounter an applied box rule without having anything to further the branch
+                            return
+                    else:
+                        branch = branch[0].branch(branch, self)
+                        branch.remove(branch[0])
                     self.order_tree(branch)
                 else:
                     self.open_branch = True

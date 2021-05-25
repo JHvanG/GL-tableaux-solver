@@ -5,6 +5,7 @@ class Box(Formula):
     def __init__(self, formula, world=None):
         super().__init__(character="[]", formula_one=formula, formula_two=None, is_atom=False, binary=False, world=world)
         self.applied_relations = []
+        self.applied_to_all = False
         pass
 
     def branch(self, branch, solver):
