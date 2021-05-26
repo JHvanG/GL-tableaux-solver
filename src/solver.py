@@ -7,6 +7,7 @@ class Solver(object):
         self.worlds = [1]
         self.relations = []
         self.open_branch = False
+        self.new_relation = False
 
     # This method applies the transitivity rule to the relations
     def apply_transitivity(self):
@@ -30,29 +31,30 @@ class Solver(object):
             for form in branch:
                 if isinstance(form, conjunction.Conjunction):
                     rank1.append(form)
-                elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or isinstance(form, bi_implication.BiImplication):
+                elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or\
+                        isinstance(form, bi_implication.BiImplication):
                     rank2.append(form)
                 elif isinstance(form, box.Box):
-                    rank3.append(form)
+                    if form.applied_to_all:
+                        rank6.append(form)
+                    else:
+                        print('bonjourno')
+                        rank3.append(form)
                 elif isinstance(form, diamond.Diamond):
                     rank4.append(form)
                 elif isinstance(form, negation.Negation):
                     new_form = form.formula_one
-                    if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication):
+                    if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication) or\
+                            isinstance(new_form, box.Box) or isinstance(new_form, diamond.Diamond):
                         rank1.append(form)
                     elif isinstance(new_form, conjunction.Conjunction) or isinstance(new_form, bi_implication.BiImplication):
                         rank2.append(form)
-                    elif isinstance(new_form, diamond.Diamond):
-                        rank3.append(form)
-                    elif isinstance(new_form, box.Box):
-                        rank4.append(form)
                     elif new_form.is_atom:
                         rank6.append(form)
                 elif isinstance(form, list):
                     rank5.append(form)
                 elif form.is_atom:
                     rank6.append(form)
-
             return rank1 + rank2 + rank3 + rank4 + rank5 + rank6
         else:
             return None
@@ -60,27 +62,42 @@ class Solver(object):
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
         # TODO: negation of formula is checked incorrectly at world num
+        #       an applied rule can also cause a contradiction
         while branch:
-            if isinstance(branch[0], formula.Formula):
+            for form in branch:
+                print(form.convert_to_string(), form.world)
+            print(' ')
+            # if a new relation has just been added to the branch, we must check all box formulas again
+            if self.new_relation:
+                for form in [x for x in branch if isinstance(x, box.Box)]:
+                    form.applied_to_all = False
+                self.new_relation = False
+                branch = self.order_tree(branch)
+            elif isinstance(branch[0], formula.Formula):
+                # check 1 for contradiction
                 if negation.Negation(branch[0]) in self.tree:
                     return
+                # check 2 for contradiction NOT WORKING YET --> WORLD NOT CORRECT
                 elif isinstance(branch[0], negation.Negation) and branch[0].formula_one in self.tree:
                     return
+                # apply branch rule
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
-                    print(branch[0].convert_to_string(), branch[0].world)
+                    # Box rules are unique in that they persist in the branch
                     if isinstance(branch[0], box.Box):
-                        if not branch[0].is_applied:
+                        if not branch[0].applied_to_all:
                             branch = branch[0].branch(branch, self)
-                            branch[0].is_applied = True
-                            # TODO: adjust sorting
-                            #       reset is_applied booleans when diamond rule is applied
+                            branch[0].applied_to_all = True
+                        # if we were to find a box that has been applied to all relations, all rules are applied and
+                        # the branch does not close
                         else:
                             # in this case, we encounter an applied box rule without having anything to further the branch
+                            self.open_branch = True
                             return
                     else:
                         branch = branch[0].branch(branch, self)
                         branch.remove(branch[0])
-                    self.order_tree(branch)
+                    # reorganise the branch
+                    branch = self.order_tree(branch)
                 else:
                     self.open_branch = True
                     return
@@ -97,6 +114,7 @@ class Solver(object):
         # TODO: add transitivity
         #       avoid infinite branches
         #       implement sleep of box operator
+        #       check that open branch boolean is correctly set everywhere
         self.tree.append(negation.Negation(form, self.worlds[0]))
 
         self.check_branch(self.tree)

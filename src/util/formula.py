@@ -21,27 +21,6 @@ class Formula(object):
                    self.formula_two == other.formula_two and self.is_atom == other.is_atom and \
                    self.binary == other.binary and self.world == other.world
 
-    # method to fill in the first empty spot in a formula being generated
-    # returns true if a None element is filled in, else it returns false
-    '''
-    def fill_in(self, filler):
-        if not self.is_atom:
-            if self.formula_one is None:
-                self.formula_one = filler
-                return True
-            elif self.binary and self.formula_two is None:
-                self.formula_two = filler
-                return True
-            else:
-                if not self.formula_one.is_atom:
-                    if self.formula_one.fill_in(filler):
-                        return True
-                elif self.binary and not self.formula_two.is_atom:
-                    return self.formula_two.fill_in(filler)
-        
-        return False
-    '''
-
     # method to print the formula with proper brackets in place
     def convert_to_string(self):
         if self.is_atom:

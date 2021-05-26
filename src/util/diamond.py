@@ -19,6 +19,8 @@ class Diamond(Formula):
         self.formula_one.world = j
         branch.append(self.formula_one)
 
+        solver.new_relation = True
+
         return branch
 
     def branch_negated(self, branch, solver):
