@@ -6,6 +6,7 @@ class Solver(object):
         self.tree = []
         self.worlds = [1]
         self.relations = []
+        self.applied_rules = []
         self.open_branch = False
         self.new_relation = False
 
@@ -38,7 +39,6 @@ class Solver(object):
                     if form.applied_to_all:
                         rank6.append(form)
                     else:
-                        print('bonjourno')
                         rank3.append(form)
                 elif isinstance(form, diamond.Diamond):
                     rank4.append(form)
@@ -59,26 +59,55 @@ class Solver(object):
         else:
             return None
 
+    # This method is used to check whether there is a contradiction within the tree
+    def has_contradiction(self, branch):
+        form = branch[0]
+        for item in branch:
+            if form == negation.Negation(item, world=item.world):
+                return True
+            elif negation.Negation(form, world=form.world) == item:
+                return True
+        for list in self.applied_rules:
+            for item in list:
+                print(item.convert_to_string(), form.convert_to_string())
+                temp = box.Box(formula.Formula(None, "A", None, True, False, 2))
+                if form == temp:
+                    print("Hello", item.convert_to_string())
+                if form == negation.Negation(item, world=item.world):
+                    return True
+                elif negation.Negation(form, world=form.world) == item:
+                    return True
+        return False
+
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
         # TODO: negation of formula is checked incorrectly at world num
         #       an applied rule can also cause a contradiction
         while branch:
+            print('\n\ncurrent:')
             for form in branch:
                 print(form.convert_to_string(), form.world)
-            print(' ')
+            print('\napplied:')
+            for list in self.applied_rules:
+                for form in list:
+                    print(form.convert_to_string(), form.world)
             # if a new relation has just been added to the branch, we must check all box formulas again
             if self.new_relation:
                 for form in [x for x in branch if isinstance(x, box.Box)]:
                     form.applied_to_all = False
                 self.new_relation = False
                 branch = self.order_tree(branch)
-            elif isinstance(branch[0], formula.Formula):
+
+            if isinstance(branch[0], formula.Formula):
+                '''
                 # check 1 for contradiction
                 if negation.Negation(branch[0]) in self.tree:
                     return
                 # check 2 for contradiction NOT WORKING YET --> WORLD NOT CORRECT
                 elif isinstance(branch[0], negation.Negation) and branch[0].formula_one in self.tree:
+                    return
+                '''
+                if self.has_contradiction(branch):
                     return
                 # apply branch rule
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
@@ -93,8 +122,10 @@ class Solver(object):
                             # in this case, we encounter an applied box rule without having anything to further the branch
                             self.open_branch = True
                             return
+                    # for all other connectives, apply the rule, add it to the applied_rules list and remove from the active branch
                     else:
                         branch = branch[0].branch(branch, self)
+                        self.applied_rules[len(self.applied_rules) - 1].append(branch[0])
                         branch.remove(branch[0])
                     # reorganise the branch
                     branch = self.order_tree(branch)
@@ -102,7 +133,10 @@ class Solver(object):
                     self.open_branch = True
                     return
             elif isinstance(branch[0], list):
+                self.applied_rules.append([])
                 self.check_branch(branch[0])
+                self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
+
                 if self.open_branch:
                     return
                 else:
@@ -113,11 +147,13 @@ class Solver(object):
     def solve_formula(self, form):
         # TODO: add transitivity
         #       avoid infinite branches
-        #       implement sleep of box operator
         #       check that open branch boolean is correctly set everywhere
+        #       keep track of applied rules
+        #       design method for checking contradictions
         self.tree.append(negation.Negation(form, self.worlds[0]))
-
+        self.applied_rules.append([])
         self.check_branch(self.tree)
+
         if self.open_branch:
             print("invalid formula")
         else:
