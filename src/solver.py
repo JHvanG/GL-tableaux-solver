@@ -4,7 +4,7 @@ from util import formula, negation, box, diamond, conjunction, disjunction, impl
 class Solver(object):
     def __init__(self):
         self.tree = []
-        self.worlds = [1]
+        self.worlds = [0]
         self.relations = []
         self.applied_rules = []
         self.open_branch = False
@@ -63,33 +63,34 @@ class Solver(object):
     def has_contradiction(self, branch):
         form = branch[0]
         for item in branch:
-            if form == negation.Negation(item, world=item.world):
+            #if form == negation.Negation(item, world=item.world):
+            if form.equals(negation.Negation(item, world=item.world)):
                 return True
-            elif negation.Negation(form, world=form.world) == item:
+            #elif negation.Negation(form, world=form.world) == item:
+            elif item.equals(negation.Negation(form, world=form.world)):
                 return True
-        for list in self.applied_rules:
-            for item in list:
-                print(item.convert_to_string(), form.convert_to_string())
-                temp = box.Box(formula.Formula(None, "A", None, True, False, 2))
-                if form == temp:
-                    print("Hello", item.convert_to_string())
-                if form == negation.Negation(item, world=item.world):
+        for lst in self.applied_rules:
+            for item in lst:
+                #if form == negation.Negation(item, world=item.world):
+                if form.equals(negation.Negation(item, world=item.world)):
                     return True
-                elif negation.Negation(form, world=form.world) == item:
+                #elif negation.Negation(form, world=form.world) == item:
+                elif item.equals(negation.Negation(form, world=form.world)):
                     return True
         return False
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
-        # TODO: negation of formula is checked incorrectly at world num
-        #       an applied rule can also cause a contradiction
         while branch:
             print('\n\ncurrent:')
             for form in branch:
-                print(form.convert_to_string(), form.world)
+                if isinstance(form, list):
+                    print('branch')
+                else:
+                    print(form.convert_to_string(), form.world)
             print('\napplied:')
-            for list in self.applied_rules:
-                for form in list:
+            for lst in self.applied_rules:
+                for form in lst:
                     print(form.convert_to_string(), form.world)
             # if a new relation has just been added to the branch, we must check all box formulas again
             if self.new_relation:
@@ -99,14 +100,6 @@ class Solver(object):
                 branch = self.order_tree(branch)
 
             if isinstance(branch[0], formula.Formula):
-                '''
-                # check 1 for contradiction
-                if negation.Negation(branch[0]) in self.tree:
-                    return
-                # check 2 for contradiction NOT WORKING YET --> WORLD NOT CORRECT
-                elif isinstance(branch[0], negation.Negation) and branch[0].formula_one in self.tree:
-                    return
-                '''
                 if self.has_contradiction(branch):
                     return
                 # apply branch rule
@@ -145,11 +138,8 @@ class Solver(object):
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        # TODO: add transitivity
-        #       avoid infinite branches
+        # TODO: avoid infinite branches
         #       check that open branch boolean is correctly set everywhere
-        #       keep track of applied rules
-        #       design method for checking contradictions
         self.tree.append(negation.Negation(form, self.worlds[0]))
         self.applied_rules.append([])
         self.check_branch(self.tree)

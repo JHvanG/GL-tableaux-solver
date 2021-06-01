@@ -6,7 +6,7 @@ import pickle, os
 
 class Generator(object):
     def __init__(self):
-        self.total_length = 1
+        self.within_length = False
         self.position = 0
         self.generator_on = False
         self.formula_complexity = 0
@@ -115,8 +115,10 @@ class Generator(object):
 
         self.save_to_file(new_formulas)
 
-    # TODO: Fix method to procedurally generate increasing combinations of past formulae.
-    #       Using pickle save past formulae
+    def check_length(self, form):
+        if len(form.convert_to_string()) <= 280:
+            self.within_length = True
+
     def create_formula(self):
         while self.generator_on:
             if self.formula_complexity == 0:
