@@ -26,11 +26,13 @@ class Solver(object):
 
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
-        rank1, rank2, rank3, rank4, rank5, rank6 = ([] for i in range(6))
+        rank0, rank1, rank2, rank3, rank4, rank5, rank6 = ([] for i in range(7))
 
         if branch:
             for form in branch:
-                if isinstance(form, conjunction.Conjunction):
+                if form.is_atom and form.formula_one == '#':
+                    rank0.append(form)
+                elif isinstance(form, conjunction.Conjunction):
                     rank1.append(form)
                 elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or\
                         isinstance(form, bi_implication.BiImplication):
@@ -55,7 +57,7 @@ class Solver(object):
                     rank5.append(form)
                 elif form.is_atom:
                     rank6.append(form)
-            return rank1 + rank2 + rank3 + rank4 + rank5 + rank6
+            return rank0 + rank1 + rank2 + rank3 + rank4 + rank5 + rank6
         else:
             return None
 
@@ -81,7 +83,9 @@ class Solver(object):
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
+        # TODO: add check for '#' plus branch closing / removal of rule
         while branch:
+            # temporary print statements for debugging
             print('\n\ncurrent:')
             for form in branch:
                 if isinstance(form, list):
@@ -92,6 +96,8 @@ class Solver(object):
             for lst in self.applied_rules:
                 for form in lst:
                     print(form.convert_to_string(), form.world)
+
+
             # if a new relation has just been added to the branch, we must check all box formulas again
             if self.new_relation:
                 for form in [x for x in branch if isinstance(x, box.Box)]:
@@ -102,6 +108,12 @@ class Solver(object):
             if isinstance(branch[0], formula.Formula):
                 if self.has_contradiction(branch):
                     return
+                # a contradiction immediately closes the present branch
+                elif branch[0].is_atom and branch[0].formula_one == '#':
+                    return
+                # a negated contradiction is always true, hence it can be removed without consequence
+                elif isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom and branch[0].formula_one.formula_one == '#':
+                    branch.remove(branch[0])
                 # apply branch rule
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
                     # Box rules are unique in that they persist in the branch
@@ -156,6 +168,7 @@ if __name__ == "__main__":
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
                                    #formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
-    test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
+    #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
+    test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
     solver = Solver()
     solver.solve_formula(test)

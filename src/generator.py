@@ -91,7 +91,8 @@ class Generator(object):
 
         atom_one = formula.Formula(None, "A", None, True, False)
         atom_two = formula.Formula(None, "B", None, True, False)
-        formula_list = [atom_one, atom_two]
+        atom_three = formula.Formula(None, "#", None, True, False)
+        formula_list = [atom_one, atom_two, atom_three]
         self.save_to_file(formula_list)
 
     # This method will produce and save combinations of the previously saved formulas
@@ -116,6 +117,7 @@ class Generator(object):
         self.save_to_file(new_formulas)
 
     def check_length(self, form):
+        # TODO: have all elements be one character in the string representation
         if len(form.convert_to_string()) <= 280:
             self.within_length = True
 
