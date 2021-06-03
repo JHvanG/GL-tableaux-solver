@@ -1,8 +1,18 @@
 from util import formula, negation, box, diamond, conjunction, disjunction, implication, bi_implication
+#from memory_profiler import memory_usage
+import tracemalloc
 
 
 class Solver(object):
     def __init__(self):
+        self.tree = []
+        self.worlds = [0]
+        self.relations = []
+        self.applied_rules = []
+        self.open_branch = False
+        self.new_relation = False
+
+    def reset(self):
         self.tree = []
         self.worlds = [0]
         self.relations = []
@@ -30,33 +40,34 @@ class Solver(object):
 
         if branch:
             for form in branch:
-                if form.is_atom and form.formula_one == '#':
-                    rank0.append(form)
-                elif isinstance(form, conjunction.Conjunction):
-                    rank1.append(form)
-                elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or\
-                        isinstance(form, bi_implication.BiImplication):
-                    rank2.append(form)
-                elif isinstance(form, box.Box):
-                    if form.applied_to_all:
-                        rank6.append(form)
-                    else:
-                        rank3.append(form)
-                elif isinstance(form, diamond.Diamond):
-                    rank4.append(form)
-                elif isinstance(form, negation.Negation):
-                    new_form = form.formula_one
-                    if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication) or\
-                            isinstance(new_form, box.Box) or isinstance(new_form, diamond.Diamond):
+                if isinstance(form, formula.Formula):
+                    if form.is_atom and form.formula_one == '#':
+                        rank0.append(form)
+                    elif isinstance(form, conjunction.Conjunction):
                         rank1.append(form)
-                    elif isinstance(new_form, conjunction.Conjunction) or isinstance(new_form, bi_implication.BiImplication):
+                    elif isinstance(form, disjunction.Disjunction) or isinstance(form, implication.Implication) or\
+                            isinstance(form, bi_implication.BiImplication):
                         rank2.append(form)
-                    elif new_form.is_atom:
+                    elif isinstance(form, box.Box):
+                        if form.applied_to_all:
+                            rank6.append(form)
+                        else:
+                            rank3.append(form)
+                    elif isinstance(form, diamond.Diamond):
+                        rank4.append(form)
+                    elif isinstance(form, negation.Negation):
+                        new_form = form.formula_one
+                        if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication) or\
+                                isinstance(new_form, box.Box) or isinstance(new_form, diamond.Diamond):
+                            rank1.append(form)
+                        elif isinstance(new_form, conjunction.Conjunction) or isinstance(new_form, bi_implication.BiImplication):
+                            rank2.append(form)
+                        elif new_form.is_atom:
+                            rank6.append(form)
+                    elif form.is_atom:
                         rank6.append(form)
                 elif isinstance(form, list):
                     rank5.append(form)
-                elif form.is_atom:
-                    rank6.append(form)
             return rank0 + rank1 + rank2 + rank3 + rank4 + rank5 + rank6
         else:
             return None
@@ -83,7 +94,6 @@ class Solver(object):
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
-        # TODO: add check for '#' plus branch closing / removal of rule
         while branch:
             # temporary print statements for debugging
             print('\n\ncurrent:')
@@ -151,7 +161,9 @@ class Solver(object):
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
         # TODO: avoid infinite branches
-        #       check that open branch boolean is correctly set everywhere
+
+        tracemalloc.start()
+
         self.tree.append(negation.Negation(form, self.worlds[0]))
         self.applied_rules.append([])
         self.check_branch(self.tree)
@@ -161,6 +173,18 @@ class Solver(object):
         else:
             print("valid formula")
 
+        current, peak = tracemalloc.get_traced_memory()
+        snapshot = tracemalloc.take_snapshot()
+
+        print(current, peak)
+        stats = snapshot.statistics('lineno')
+        for stat in stats:
+            print(stat)
+
+        tracemalloc.stop()
+
+        self.reset()
+
 
 if __name__ == "__main__":
     #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
@@ -168,7 +192,23 @@ if __name__ == "__main__":
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
                                    #formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
-    #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
-    test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
+    test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
+    #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
+
     solver = Solver()
+
+    # further investigation required!
+    #usage = memory_usage((solver.solve_formula, (test, ), ), timestamps=True, interval=0.2)
+    #print(usage)
+
+    tracemalloc.start()
+    current, peak = tracemalloc.get_traced_memory()
     solver.solve_formula(test)
+    current, peak = tracemalloc.get_traced_memory()
+    snapshot = tracemalloc.take_snapshot()
+    # interested in the peak memory usage
+    print(current, peak)
+    stats = snapshot.statistics('lineno')
+    for stat in stats:
+        print(stat)
+    tracemalloc.stop()

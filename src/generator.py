@@ -1,3 +1,4 @@
+from src.solver import Solver
 from util import formula, negation, box, diamond, disjunction, conjunction, implication, bi_implication
 from util.connective_enum import ConnectiveType
 from pathlib import Path
@@ -11,6 +12,7 @@ class Generator(object):
         self.generator_on = False
         self.formula_complexity = 0
         self.storage_path = os.path.join(Path(__file__).parents[1], "storage")
+        self.solver = Solver()
 
     # This method is responsible for saving the formulas a .form file using pickle
     def save_to_file(self, formula_list):
@@ -49,6 +51,8 @@ class Generator(object):
                 elif connective == ConnectiveType.DIAMOND:
                     new_form = diamond.Diamond(form)
 
+                # solve each new formula right away
+                self.solver.solve_formula(new_form)
                 formula_list.append(new_form)
 
         return formula_list
@@ -83,6 +87,9 @@ class Generator(object):
                         elif connective == ConnectiveType.BIIMPLICATION:
                             formula_list.append(bi_implication.BiImplication(form_a, form_b))
 
+                    # solve each new formula right away
+                    self.solver.solve_formula(formula_list[len(formula_list) - 1])
+
         return formula_list
 
     # This method will produce and save the two atoms A and B
@@ -113,6 +120,9 @@ class Generator(object):
         while min <= max:
             new_formulas += self.create_binary_connectives(min, max)
             min += 1
+
+        for form in new_formulas:
+            self.solver.solve_formula(form)
 
         self.save_to_file(new_formulas)
 
