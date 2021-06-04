@@ -16,6 +16,7 @@ class Generator(object):
 
     # This method is responsible for saving the formulas a .form file using pickle
     def save_to_file(self, formula_list):
+        # TODO: REMOVE FILE IF IT ALREADY EXISTS?
         filepath = os.path.join(self.storage_path, "formula_set_" + str(self.formula_complexity) + ".form")
         with open(filepath, 'wb') as file:
             for form in formula_list:

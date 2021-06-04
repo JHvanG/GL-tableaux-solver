@@ -18,7 +18,10 @@ class Box(Formula):
                 self.applied_relations.append([i, j])
                 branch.append(Box(self.formula_one, j))
                 self.formula_one.world = j
+                print(len(branch))
                 branch.append(self.formula_one)
+                #print('adding:', self.formula_one.convert_to_string(), self.formula_one.world)
+                print(len(branch))
 
         return branch
 

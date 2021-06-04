@@ -1,6 +1,5 @@
 from util import formula, negation, box, diamond, conjunction, disjunction, implication, bi_implication
-#from memory_profiler import memory_usage
-import tracemalloc
+import tracemalloc, itertools
 
 
 class Solver(object):
@@ -22,7 +21,7 @@ class Solver(object):
 
     # This method applies the transitivity rule to the relations
     def apply_transitivity(self):
-        for relation_a in self.relations:
+        '''for relation_a in self.relations:
             for relation_b in self.relations:
                 if relation_a != relation_b:
                     if relation_a[0] == relation_b[1]:
@@ -32,7 +31,17 @@ class Solver(object):
                     elif relation_a[1] == relation_b[0]:
                         new_relation = [relation_b[0], relation_a[1]]
                         if new_relation not in self.relations:
-                            self.relations.append(new_relation)
+                            self.relations.append(new_relation)'''
+        new_relation = None
+        for i,j in itertools.combinations(self.relations, 2):
+            if i[1] == j[0]:
+                new_relation = [i[0], j[1]]
+            elif j[1] == i[0]:
+                new_relation = [j[0], i[1]]
+            if new_relation and new_relation not in self.relations:
+                self.relations.append(new_relation)
+
+
 
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
@@ -58,7 +67,7 @@ class Solver(object):
                     elif isinstance(form, negation.Negation):
                         new_form = form.formula_one
                         if isinstance(new_form, disjunction.Disjunction) or isinstance(new_form, implication.Implication) or\
-                                isinstance(new_form, box.Box) or isinstance(new_form, diamond.Diamond):
+                                isinstance(new_form, box.Box) or isinstance(new_form, diamond.Diamond) or isinstance(new_form, negation.Negation):
                             rank1.append(form)
                         elif isinstance(new_form, conjunction.Conjunction) or isinstance(new_form, bi_implication.BiImplication):
                             rank2.append(form)
@@ -76,20 +85,22 @@ class Solver(object):
     def has_contradiction(self, branch):
         form = branch[0]
         for item in branch:
-            #if form == negation.Negation(item, world=item.world):
-            if form.equals(negation.Negation(item, world=item.world)):
-                return True
-            #elif negation.Negation(form, world=form.world) == item:
-            elif item.equals(negation.Negation(form, world=form.world)):
-                return True
-        for lst in self.applied_rules:
-            for item in lst:
+            if not isinstance(item, list):
                 #if form == negation.Negation(item, world=item.world):
                 if form.equals(negation.Negation(item, world=item.world)):
                     return True
                 #elif negation.Negation(form, world=form.world) == item:
                 elif item.equals(negation.Negation(form, world=form.world)):
                     return True
+        for lst in self.applied_rules:
+            for item in lst:
+                if not isinstance(item, list):
+                    #if form == negation.Negation(item, world=item.world):
+                    if form.equals(negation.Negation(item, world=item.world)):
+                        return True
+                    #elif negation.Negation(form, world=form.world) == item:
+                    elif item.equals(negation.Negation(form, world=form.world)):
+                        return True
         return False
 
     # This method is used to check the validity of a branch
@@ -116,6 +127,9 @@ class Solver(object):
                 branch = self.order_tree(branch)
 
             if isinstance(branch[0], formula.Formula):
+                print('relations:')
+                for relation in self.relations:
+                    print(relation)
                 if self.has_contradiction(branch):
                     return
                 # a contradiction immediately closes the present branch
@@ -152,6 +166,7 @@ class Solver(object):
                 self.check_branch(branch[0])
                 self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
 
+                # TODO: this is probably not entirely correct
                 if self.open_branch:
                     return
                 else:
@@ -160,8 +175,6 @@ class Solver(object):
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        # TODO: avoid infinite branches
-
         tracemalloc.start()
 
         self.tree.append(negation.Negation(form, self.worlds[0]))
@@ -192,23 +205,9 @@ if __name__ == "__main__":
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
                                    #formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
-    test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
+    #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
     #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
-
+    #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
+    test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), formula.Formula(None, '#', None, True, False, None))
     solver = Solver()
-
-    # further investigation required!
-    #usage = memory_usage((solver.solve_formula, (test, ), ), timestamps=True, interval=0.2)
-    #print(usage)
-
-    tracemalloc.start()
-    current, peak = tracemalloc.get_traced_memory()
     solver.solve_formula(test)
-    current, peak = tracemalloc.get_traced_memory()
-    snapshot = tracemalloc.take_snapshot()
-    # interested in the peak memory usage
-    print(current, peak)
-    stats = snapshot.statistics('lineno')
-    for stat in stats:
-        print(stat)
-    tracemalloc.stop()
