@@ -105,7 +105,7 @@ class Solver(object):
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
-        while branch:
+        while branch and not self.open_branch:
             # temporary print statements for debugging
             print('\n\ncurrent:')
             for form in branch:
@@ -135,9 +135,6 @@ class Solver(object):
                 # a contradiction immediately closes the present branch
                 elif branch[0].is_atom and branch[0].formula_one == '#':
                     return
-                # a negated contradiction is always true, hence it can be removed without consequence
-                elif isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom and branch[0].formula_one.formula_one == '#':
-                    branch.remove(branch[0])
                 # apply branch rule
                 elif not branch[0].is_atom and not (isinstance(branch[0], negation.Negation) and branch[0].formula_one.is_atom):
                     # Box rules are unique in that they persist in the branch
@@ -171,7 +168,6 @@ class Solver(object):
                     return
                 else:
                     branch.remove(branch[0])
-                    return
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
@@ -208,6 +204,7 @@ if __name__ == "__main__":
     #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
     #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
     #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
-    test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), formula.Formula(None, '#', None, True, False, None))
+
+    test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
     solver = Solver()
     solver.solve_formula(test)
