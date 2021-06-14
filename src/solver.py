@@ -101,7 +101,8 @@ class Solver(object):
                         rank6.append(form)
                 elif isinstance(form, list):
                     rank5.append(form)
-            return rank0 + rank1 + rank2 + rank3 + rank4 + rank5 + rank6
+                    # make rank 5 rank 2
+            return rank0 + rank1 + rank5 + rank2 + rank3 + rank4 + rank6
         else:
             return None
 
@@ -122,6 +123,8 @@ class Solver(object):
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
+        branch_one_opened = False
+        branch_two_opened = False
         branch_one_closed = False
         branch_two_closed = False
 
@@ -151,7 +154,26 @@ class Solver(object):
                 self.new_relation = False
                 branch = self.order_tree(branch)
 
-            if isinstance(branch[0], formula.Formula):
+            if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):
+
+                self.applied_rules.append([])
+                self.depth += 1
+                # TODO: MOVE BRANCHES TO ONE
+                branch[0] += self.get_unapplied_rules(self.tree, 0)
+                self.check_branch(branch[0])
+                self.depth -= 1
+                self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
+
+                if self.open_branch:
+                    return
+                else:
+                    if not branch_one_closed:
+                        branch_one_closed = True
+                    elif not branch_two_closed:
+                        branch_two_closed = True
+                    branch.remove(branch[0])
+
+            elif isinstance(branch[0], formula.Formula):
                 if self.has_contradiction(branch[0], self.tree):
                     return
                 # a contradiction immediately closes the present branch
@@ -174,25 +196,20 @@ class Solver(object):
                         branch.remove(branch[0])
                     # reorganise the branch
                     branch = self.order_tree(branch)
+
+                    print('checking branch: ', branch)
+                    for item in branch:
+                        if isinstance(item, list):
+                            print('found one')
+                            if not branch_one_opened:
+                                print('one')
+                                branch_one_opened = True
+                            elif not branch_two_opened:
+                                print('two')
+                                branch_two_opened = True
                 else:
                     self.open_branch = True
                     return
-            elif isinstance(branch[0], list):
-                self.applied_rules.append([])
-                self.depth += 1
-                branch[0] += self.get_unapplied_rules(self.tree, 0)
-                self.check_branch(branch[0])
-                self.depth -= 1
-                self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
-
-                if self.open_branch:
-                    return
-                else:
-                    if not branch_one_closed:
-                        branch_one_closed = True
-                    elif not branch_two_closed:
-                        branch_two_closed = True
-                    branch.remove(branch[0])
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
@@ -230,6 +247,7 @@ if __name__ == "__main__":
     #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
     #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "B", None, True, False)), disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
-    test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
+    #test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
+    test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     solver = Solver()
     solver.solve_formula(test)
