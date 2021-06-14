@@ -4,7 +4,7 @@ from .negation import Negation
 
 class Implication(Formula):
     def __init__(self, formula_one, formula_two, world=None):
-        super().__init__(character="->", formula_one=formula_one, formula_two=formula_two, is_atom=False, binary=True, world=world)
+        super().__init__(character=">", formula_one=formula_one, formula_two=formula_two, is_atom=False, binary=True, world=world)
         pass
 
     def branch(self, branch, solver):

@@ -95,8 +95,6 @@ class Generator(object):
 
     # This method will produce and save the two atoms A and B
     def generate_atoms(self):
-        # TODO: include contradiction as well!
-
         atom_one = formula.Formula(None, "A", None, True, False)
         atom_two = formula.Formula(None, "B", None, True, False)
         atom_three = formula.Formula(None, "#", None, True, False)
@@ -106,8 +104,8 @@ class Generator(object):
     # This method will produce and save combinations of the previously saved formulas
     def generate_combinations(self):
         """
-        unary: ~, [], <>
-        binary: &, |, ->, <->
+        unary: ~, +, -
+        binary: &, |, >, =
         Complexity 1: unary on {0} and binary on {0,0}
         Complexity 2: unary on {1} and binary on {0,1} and {1,1}
         Complexity 3: unary on {2} and binary on {0,2}, {1,2} and {2,2}
@@ -128,7 +126,6 @@ class Generator(object):
         self.save_to_file(new_formulas)
 
     def check_length(self, form):
-        # TODO: have all elements be one character in the string representation
         if len(form.convert_to_string()) <= 280:
             self.within_length = True
 

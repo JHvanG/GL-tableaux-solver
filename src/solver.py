@@ -5,33 +5,23 @@ import tracemalloc, itertools
 class Solver(object):
     def __init__(self):
         self.tree = []
+        self.applied_rules = []
         self.worlds = [0]
         self.relations = []
-        self.applied_rules = []
+        self.depth = 0
         self.open_branch = False
         self.new_relation = False
 
     def reset(self):
         self.tree = []
+        self.applied_rules = []
         self.worlds = [0]
         self.relations = []
-        self.applied_rules = []
         self.open_branch = False
         self.new_relation = False
 
     # This method applies the transitivity rule to the relations
     def apply_transitivity(self):
-        '''for relation_a in self.relations:
-            for relation_b in self.relations:
-                if relation_a != relation_b:
-                    if relation_a[0] == relation_b[1]:
-                        new_relation = [relation_a[0], relation_b[1]]
-                        if new_relation not in self.relations:
-                            self.relations.append(new_relation)
-                    elif relation_a[1] == relation_b[0]:
-                        new_relation = [relation_b[0], relation_a[1]]
-                        if new_relation not in self.relations:
-                            self.relations.append(new_relation)'''
         new_relation = None
         for i,j in itertools.combinations(self.relations, 2):
             if i[1] == j[0]:
@@ -41,7 +31,41 @@ class Solver(object):
             if new_relation and new_relation not in self.relations:
                 self.relations.append(new_relation)
 
+    def get_unapplied_rules(self, branch, current_depth):
+        unapplied_rules = []
+        branch_found = False
+        for item in branch:
+            if not isinstance(item, list):
+                unapplied_rules.append(item)
+            elif not branch_found:
+                branch_found = True
+                current_depth += 1
+                if current_depth < self.depth - 1:
+                    unapplied_rules += self.get_unapplied_rules(item, current_depth)
+        return unapplied_rules
 
+    def update_branch(self, branch, current_depth, altered_branch):
+        for item in branch:
+            if isinstance(item, list):
+                if current_depth == self.depth - 1:
+                    branch[branch.index(item)] = altered_branch
+                    return branch
+                else:
+                    current_depth += 1
+                    branch[branch.index(item)] = self.update_branch(item, current_depth, altered_branch)
+                    return branch
+
+    def update_tree(self, altered_branch):
+        if self.depth == 0:
+            self.tree = altered_branch
+        else:
+            for item in self.tree:
+                if isinstance(item, list):
+                    if self.depth == 1:
+                        self.tree[self.tree.index(item)] = altered_branch
+                        break
+                    else:
+                        self.update_branch(item, 1, altered_branch)
 
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
@@ -82,31 +106,33 @@ class Solver(object):
             return None
 
     # This method is used to check whether there is a contradiction within the tree
-    def has_contradiction(self, branch):
-        form = branch[0]
+    def has_contradiction(self, form, branch):
         for item in branch:
             if not isinstance(item, list):
-                #if form == negation.Negation(item, world=item.world):
-                if form.equals(negation.Negation(item, world=item.world)):
+                if form.equals(negation.Negation(item, world=item.world)) or item.equals(negation.Negation(form, world=form.world)):
                     return True
-                #elif negation.Negation(form, world=form.world) == item:
-                elif item.equals(negation.Negation(form, world=form.world)):
-                    return True
+            else:
+                return self.has_contradiction(form, item)
         for lst in self.applied_rules:
             for item in lst:
                 if not isinstance(item, list):
-                    #if form == negation.Negation(item, world=item.world):
-                    if form.equals(negation.Negation(item, world=item.world)):
-                        return True
-                    #elif negation.Negation(form, world=form.world) == item:
-                    elif item.equals(negation.Negation(form, world=form.world)):
+                    if form.equals(negation.Negation(item, world=item.world)) or item.equals(negation.Negation(form, world=form.world)):
                         return True
         return False
 
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
+        branch_one_closed = False
+        branch_two_closed = False
+
         while branch and not self.open_branch:
+            self.update_tree(branch)
+
+            if branch_one_closed and branch_two_closed:
+                return
+
             # temporary print statements for debugging
+            print(self.tree)
             print('\n\ncurrent:')
             for form in branch:
                 if isinstance(form, list):
@@ -118,7 +144,6 @@ class Solver(object):
                 for form in lst:
                     print(form.convert_to_string(), form.world)
 
-
             # if a new relation has just been added to the branch, we must check all box formulas again
             if self.new_relation:
                 for form in [x for x in branch if isinstance(x, box.Box)]:
@@ -127,10 +152,7 @@ class Solver(object):
                 branch = self.order_tree(branch)
 
             if isinstance(branch[0], formula.Formula):
-                print('relations:')
-                for relation in self.relations:
-                    print(relation)
-                if self.has_contradiction(branch):
+                if self.has_contradiction(branch[0], self.tree):
                     return
                 # a contradiction immediately closes the present branch
                 elif branch[0].is_atom and branch[0].formula_one == '#':
@@ -142,10 +164,7 @@ class Solver(object):
                         if not branch[0].applied_to_all:
                             branch = branch[0].branch(branch, self)
                             branch[0].applied_to_all = True
-                        # if we were to find a box that has been applied to all relations, all rules are applied and
-                        # the branch does not close
                         else:
-                            # in this case, we encounter an applied box rule without having anything to further the branch
                             self.open_branch = True
                             return
                     # for all other connectives, apply the rule, add it to the applied_rules list and remove from the active branch
@@ -160,13 +179,19 @@ class Solver(object):
                     return
             elif isinstance(branch[0], list):
                 self.applied_rules.append([])
+                self.depth += 1
+                branch[0] += self.get_unapplied_rules(self.tree, 0)
                 self.check_branch(branch[0])
+                self.depth -= 1
                 self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
 
-                # TODO: this is probably not entirely correct
                 if self.open_branch:
                     return
                 else:
+                    if not branch_one_closed:
+                        branch_one_closed = True
+                    elif not branch_two_closed:
+                        branch_two_closed = True
                     branch.remove(branch[0])
 
     # This is the main method of the solver which negates the input formula and determines the validity
@@ -198,13 +223,13 @@ class Solver(object):
 if __name__ == "__main__":
     #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
     #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
-    #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)),
-                                   #formula.Formula(None, "A", None, True, False))
+    #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
     #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
     #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
-
-    test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
+    #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
+    #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "B", None, True, False)), disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
+    test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
     solver = Solver()
     solver.solve_formula(test)
