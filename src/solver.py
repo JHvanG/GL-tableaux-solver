@@ -33,18 +33,11 @@ class Solver(object):
             if new_relation and new_relation not in self.relations:
                 self.relations.append(new_relation)
 
-    def get_unapplied_rules(self, branch, current_depth):
-        # TODO: REMOVE RULES FROM CURRENT BRANCH
+    def get_unapplied_rules(self, branch):
         unapplied_rules = []
-        branch_found = False
         for item in branch:
             if not isinstance(item, list):
                 unapplied_rules.append(item)
-            elif not branch_found:
-                branch_found = True
-                current_depth += 1
-                if current_depth < self.depth - 1:
-                    unapplied_rules += self.get_unapplied_rules(item, current_depth)
         return unapplied_rules
 
     def update_branch(self, branch, current_depth, altered_branch):
@@ -163,7 +156,7 @@ class Solver(object):
                 self.applied_rules.append([])
                 self.depth += 1
                 # TODO: MOVE BRANCHES TO ONE
-                branch[0] += self.get_unapplied_rules(self.tree, 0)
+                branch[0] += self.get_unapplied_rules(branch)
                 self.check_branch(branch[0])
                 self.depth -= 1
                 self.applied_rules.remove(self.applied_rules[len(self.applied_rules) - 1])
@@ -178,7 +171,6 @@ class Solver(object):
                     branch.remove(branch[0])
 
             elif isinstance(branch[0], formula.Formula):
-                print('one')
                 if self.has_contradiction(branch[0], self.tree):
                     return
                 # a contradiction immediately closes the present branch
@@ -200,6 +192,7 @@ class Solver(object):
                         self.applied_rules[len(self.applied_rules) - 1].append(branch[0])
                         branch.remove(branch[0])
                     # reorganise the branch
+                    #branch = self.order_tree(branch)
 
                     for item in branch:
                         if isinstance(item, list):
@@ -208,7 +201,6 @@ class Solver(object):
                             elif not branch_two_opened:
                                 branch_two_opened = True
                 else:
-                    print('hello')
                     self.open_branch = True
                     return
 
