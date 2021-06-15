@@ -12,7 +12,7 @@ class Diamond(Formula):
         i = self.world
         j = solver.worlds[len(solver.worlds) - 1] + 1
         solver.worlds.append(j)
-        solver.relations.append([i, j])
+        solver.relations[len(solver.relations) - 1].append([i, j])
         solver.apply_transitivity()
 
         branch.append(Negation(Diamond(self.formula_one), j))

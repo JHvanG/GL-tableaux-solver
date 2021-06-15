@@ -11,7 +11,8 @@ class Box(Formula):
 
     def branch(self, branch, solver):
         i = self.world
-        for relation in solver.relations:
+        all_relations = [item for sublist in solver.relations for item in sublist]
+        for relation in all_relations:
             if relation[0] == i and relation not in self.applied_relations:
                 j = relation[1]
                 formula_a = copy.deepcopy(self.formula_one)
