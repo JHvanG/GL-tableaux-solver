@@ -28,6 +28,10 @@ class Formula(object):
     def equals(self, other):
         return self.world == other.world and self == other
 
+    # this function returns the length of the string representation fo the formula (including brackets)
+    def get_length(self):
+        return len(self.convert_to_string())
+
     # this function returns the string representation of a formula
     def convert_to_string(self):
         # any binary connective within another connective is put between brackets

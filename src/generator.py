@@ -13,6 +13,7 @@ class Generator(object):
         self.formula_complexity = 0
         self.storage_path = os.path.join(Path(__file__).parents[1], "storage")
         self.solver = Solver()
+        self.twitter_msg_len = 288
 
     # This method is responsible for saving the formulas a .form file using pickle
     def save_to_file(self, formula_list):
@@ -121,13 +122,19 @@ class Generator(object):
             min += 1
 
         for form in new_formulas:
-            self.solver.solve_formula(form)
+            if self.check_length(form):
+                self.solver.solve_formula(form)
+
+        if not self.within_length:
+            self.generator_on = False
 
         self.save_to_file(new_formulas)
 
     def check_length(self, form):
-        if len(form.convert_to_string()) <= 280:
+        if len(form.convert_to_string()) <= self.twitter_msg_len:
             self.within_length = True
+            return True
+        return False
 
     def create_formula(self):
         while self.generator_on:

@@ -40,6 +40,7 @@ class Solver(object):
                 unapplied_rules.append(item)
         return unapplied_rules
 
+    # This method keeps the specified branch up to date with any adjustments
     def update_branch(self, branch, current_depth, altered_branch):
         for item in branch:
             if isinstance(item, list):
@@ -51,6 +52,8 @@ class Solver(object):
                     branch[branch.index(item)] = self.update_branch(item, current_depth, altered_branch)
                     return branch
 
+    # TODO: DO I NEED THIS SINCE THE BRANCH CONTAINS ALL RELEVANT INFO ALREADY
+    # This method keeps the entire search tree up to date
     def update_tree(self, altered_branch):
         if self.depth == 0:
             self.tree = altered_branch
@@ -117,6 +120,19 @@ class Solver(object):
                         return True
         return False
 
+    def contradiction(self, form, branch):
+        for item in branch:
+            if not isinstance(item, list):
+                if form.equals(negation.Negation(item, world=item.world)) or item.equals(negation.Negation(form, world=form.world)):
+                    return True
+        for lst in self.applied_rules:
+            for item in lst:
+                if not isinstance(item, list):
+                    if form.equals(negation.Negation(item, world=item.world)) or item.equals(
+                            negation.Negation(form, world=form.world)):
+                        return True
+        return False
+
     # This method is used to check the validity of a branch
     def check_branch(self, branch):
         branch_one_opened = False
@@ -126,13 +142,13 @@ class Solver(object):
 
         while branch and not self.open_branch:
             branch = self.order_tree(branch)
-            self.update_tree(branch)
+            #self.update_tree(branch)
 
             if branch_one_closed and branch_two_closed:
                 return
 
             # temporary print statements for debugging
-            print(self.tree)
+            #print(self.tree)
             print('\n\ncurrent:')
             for form in branch:
                 if isinstance(form, list):
@@ -144,6 +160,7 @@ class Solver(object):
                 for form in lst:
                     print(form.convert_to_string(), form.world)
 
+            #TODO: PUT ORDER AFTER THIS CONDITION
             # if a new relation has just been added to the branch, we must check all box formulas again
             if self.new_relation:
                 for form in [x for x in branch if isinstance(x, box.Box)]:
@@ -152,7 +169,6 @@ class Solver(object):
                 branch = self.order_tree(branch)
 
             if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):
-
                 self.applied_rules.append([])
                 self.depth += 1
                 # TODO: MOVE BRANCHES TO ONE
@@ -171,7 +187,9 @@ class Solver(object):
                     branch.remove(branch[0])
 
             elif isinstance(branch[0], formula.Formula):
-                if self.has_contradiction(branch[0], self.tree):
+                #if self.has_contradiction(branch[0], self.tree):
+                #    return
+                if self.contradiction(branch[0], branch):
                     return
                 # a contradiction immediately closes the present branch
                 elif branch[0].is_atom and branch[0].formula_one == '#':
@@ -211,9 +229,10 @@ class Solver(object):
         starttime = timeit.default_timer()
         tracemalloc.start()
 
-        self.tree.append(negation.Negation(form, self.worlds[0]))
+        #self.tree.append(negation.Negation(form, self.worlds[0]))
         self.applied_rules.append([])
-        self.check_branch(self.tree)
+        #self.check_branch(self.tree)
+        self.check_branch([negation.Negation(form, self.worlds[0])])
 
         if self.open_branch:
             print("invalid formula")
@@ -223,7 +242,7 @@ class Solver(object):
         current, peak = tracemalloc.get_traced_memory()
         time = timeit.default_timer() - starttime
         #snapshot = tracemalloc.take_snapshot()
-        print(peak, time)
+        print(form.get_length(), peak, time)
         #stats = snapshot.statistics('lineno')
         #for stat in stats:
         #    print(stat)
@@ -234,6 +253,7 @@ class Solver(object):
 
 
 if __name__ == "__main__":
+    # TODO: ADD UNICODE CHARACTER TO #
     # valid:
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
@@ -241,14 +261,16 @@ if __name__ == "__main__":
     #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "B", None, True, False)), disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
+    #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, '#', None, True, False, None)))
 
     # invalid:
     #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
     #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
     #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
+    #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
+    test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
 
 
-    test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     solver = Solver()
     solver.solve_formula(test)
