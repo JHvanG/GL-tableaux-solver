@@ -32,6 +32,7 @@ class Solver(object):
                 self.relations.append(new_relation)
 
     def get_unapplied_rules(self, branch, current_depth):
+        # TODO: REMOVE RULES FROM CURRENT BRANCH
         unapplied_rules = []
         branch_found = False
         for item in branch:
