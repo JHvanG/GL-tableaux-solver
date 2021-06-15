@@ -3,7 +3,7 @@ from .formula import Formula
 
 class Diamond(Formula):
     def __init__(self, formula, world=None):
-        super().__init__(character="-", formula_one=formula, formula_two=None, is_atom=False, binary=False, world=world)
+        super().__init__(character="-", formula_one=formula, formula_two=None, is_atom=False, binary=False, world=world, twitter_character='\u25C7')
         pass
 
     def branch(self, branch, solver):

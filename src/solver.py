@@ -1,5 +1,7 @@
 from util import formula, negation, box, diamond, conjunction, disjunction, implication, bi_implication
-import tracemalloc, itertools
+import tracemalloc
+import itertools
+import timeit
 
 
 class Solver(object):
@@ -130,6 +132,7 @@ class Solver(object):
         branch_two_closed = False
 
         while branch and not self.open_branch:
+            branch = self.order_tree(branch)
             self.update_tree(branch)
 
             if branch_one_closed and branch_two_closed:
@@ -175,6 +178,7 @@ class Solver(object):
                     branch.remove(branch[0])
 
             elif isinstance(branch[0], formula.Formula):
+                print('one')
                 if self.has_contradiction(branch[0], self.tree):
                     return
                 # a contradiction immediately closes the present branch
@@ -196,24 +200,23 @@ class Solver(object):
                         self.applied_rules[len(self.applied_rules) - 1].append(branch[0])
                         branch.remove(branch[0])
                     # reorganise the branch
-                    branch = self.order_tree(branch)
 
-                    print('checking branch: ', branch)
                     for item in branch:
                         if isinstance(item, list):
-                            print('found one')
                             if not branch_one_opened:
-                                print('one')
                                 branch_one_opened = True
                             elif not branch_two_opened:
-                                print('two')
                                 branch_two_opened = True
                 else:
+                    print('hello')
                     self.open_branch = True
                     return
 
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
+        print(form.convert_to_string())
+
+        starttime = timeit.default_timer()
         tracemalloc.start()
 
         self.tree.append(negation.Negation(form, self.worlds[0]))
@@ -226,12 +229,12 @@ class Solver(object):
             print("valid formula")
 
         current, peak = tracemalloc.get_traced_memory()
-        snapshot = tracemalloc.take_snapshot()
-
-        print(current, peak)
-        stats = snapshot.statistics('lineno')
-        for stat in stats:
-            print(stat)
+        time = timeit.default_timer() - starttime
+        #snapshot = tracemalloc.take_snapshot()
+        print(peak, time)
+        #stats = snapshot.statistics('lineno')
+        #for stat in stats:
+        #    print(stat)
 
         tracemalloc.stop()
 
@@ -239,16 +242,21 @@ class Solver(object):
 
 
 if __name__ == "__main__":
-    #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
-    #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    # valid:
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
     #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
-    #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
-    #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "B", None, True, False)), disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
+
+    # invalid:
+    #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
+    #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
+    #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
+    #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
+
+
     test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     solver = Solver()
     solver.solve_formula(test)

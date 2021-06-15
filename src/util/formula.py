@@ -1,6 +1,6 @@
 class Formula(object):
     # TODO: I think I should actually remove all getters and setters
-    def __init__(self, character, formula_one, formula_two=None, is_atom=False, binary=True, world=None):
+    def __init__(self, character, formula_one, formula_two=None, is_atom=False, binary=True, world=None, twitter_character=None):
         # character representing connective
         self.character = character
         # boolean for a single atom
@@ -12,6 +12,8 @@ class Formula(object):
         self.formula_two = formula_two
         # world of the formula
         self.world = world
+        # unicode character
+        self.twitter_character = twitter_character
 
     # overwritten standard method called when == is used, which does not check world number
     def __eq__(self, other):

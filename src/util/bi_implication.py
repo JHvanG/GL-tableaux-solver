@@ -3,7 +3,7 @@ from .negation import Negation
 
 class BiImplication(Formula):
     def __init__(self, formula_one, formula_two, world=None):
-        super().__init__(character="=", formula_one=formula_one, formula_two=formula_two, is_atom=False, binary=True, world=world)
+        super().__init__(character="=", formula_one=formula_one, formula_two=formula_two, is_atom=False, binary=True, world=world, twitter_character='\u21FF')
         pass
 
     def branch(self, branch, solver):

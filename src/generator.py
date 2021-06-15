@@ -1,4 +1,4 @@
-from src.solver import Solver
+from solver import Solver
 from util import formula, negation, box, diamond, disjunction, conjunction, implication, bi_implication
 from util.connective_enum import ConnectiveType
 from pathlib import Path
@@ -97,7 +97,7 @@ class Generator(object):
     def generate_atoms(self):
         atom_one = formula.Formula(None, "A", None, True, False)
         atom_two = formula.Formula(None, "B", None, True, False)
-        atom_three = formula.Formula(None, "#", None, True, False)
+        atom_three = formula.Formula(None, "#", None, True, False, None, '\u22A5')
         formula_list = [atom_one, atom_two, atom_three]
         self.save_to_file(formula_list)
 

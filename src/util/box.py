@@ -4,7 +4,7 @@ import copy
 
 class Box(Formula):
     def __init__(self, formula, world=None):
-        super().__init__(character="+", formula_one=formula, formula_two=None, is_atom=False, binary=False, world=world)
+        super().__init__(character="+", formula_one=formula, formula_two=None, is_atom=False, binary=False, world=world, twitter_character='\u25A1')
         self.applied_relations = []
         self.applied_to_all = False
         pass
@@ -19,10 +19,7 @@ class Box(Formula):
                 self.applied_relations.append([i, j])
                 branch.append(Box(formula_a, j))
                 formula_b.world = j
-                print(len(branch))
                 branch.append(formula_b)
-                #print('adding:', self.formula_one.convert_to_string(), self.formula_one.world)
-                print(len(branch))
 
         return branch
 
