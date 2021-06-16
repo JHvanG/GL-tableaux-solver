@@ -157,7 +157,7 @@ class Solver(object):
 
             branch = self.order_tree(branch)
 
-            '''
+
             # temporary print statements for debugging
             #print(self.tree)
             print('\n\ncurrent:')
@@ -170,7 +170,7 @@ class Solver(object):
             for lst in self.applied_rules:
                 for form in lst:
                     print(form.convert_to_string(), form.world)
-            '''
+
 
             if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):
                 self.applied_rules.append([])
@@ -276,7 +276,7 @@ if __name__ == "__main__":
     #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
-
+    test = conjunction.Conjunction(box.Box(box.Box(diamond.Diamond(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))), box.Box(box.Box(diamond.Diamond(box.Box(diamond.Diamond(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))))))))
 
     solver = Solver()
     solver.solve_formula(test)

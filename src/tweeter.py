@@ -1,12 +1,13 @@
 import tweepy
+import keys
 
 
 class Tweeter(object):
     def __init__(self):
-        self.consumer_key = 'TKTcvwU9Fy5wFjXDWxdagZQ5J'
-        self.consumer_secret = 'm5RJMJqV6GJlDxY3fg0R1sp7sYwH7MGQSU8ZBD9RU1aYgty5bC'
-        self.key = '1401846892342939649-i4dHvRw9hSdWaE4RMOh4oyUIv2XVqg'
-        self.secret = 'kEkcJ6YgSyA49rLy4TnNtERtcPcbVyfomOUYApAZkHA1G'
+        self.consumer_key = keys.consumer_key
+        self.consumer_secret = keys.consumer_secret
+        self.key = keys.access_token
+        self.secret = keys.access_secret
 
     def tweet_tautology(self):
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
@@ -19,3 +20,7 @@ class Tweeter(object):
             print('verification ok')
         except:
             print('Issue during verification')
+
+if __name__ == "__main__":
+    tweeter = Tweeter()
+    tweeter.tweet_tautology()
