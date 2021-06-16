@@ -1,3 +1,9 @@
 api_key = 'BsASSPPRPoJyspnf7QtkqzDvn'
-api_secret_key = '3Dr4lA6ZmRljsmaEcBjzxow844va311UlLyUOBoJOy8ZsX4IfJ'
+api_secret = '3Dr4lA6ZmRljsmaEcBjzxow844va311UlLyUOBoJOy8ZsX4IfJ'
 bearer_token = 'AAAAAAAAAAAAAAAAAAAAAP3PQgEAAAAAGsjkM4sr6PTSwKePgFDesEZARMc%3D2BLRtdRpDVAngJLaN6pzFUvIPK8MhXHEFLmUIHi5j35QtPLN11'
+
+consumer_key = 'TKTcvwU9Fy5wFjXDWxdagZQ5J'
+consumer_secret = 'm5RJMJqV6GJlDxY3fg0R1sp7sYwH7MGQSU8ZBD9RU1aYgty5bC'
+
+access_token = '1401846892342939649-i4dHvRw9hSdWaE4RMOh4oyUIv2XVqg'
+access_secret = 'kEkcJ6YgSyA49rLy4TnNtERtcPcbVyfomOUYApAZkHA1G'
