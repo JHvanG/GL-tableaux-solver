@@ -15,11 +15,15 @@ class Tweeter(object):
 
         api = tweepy.API(auth)
 
-        try:
-            api.verify_credentials()
-            print('verification ok')
-        except:
-            print('Issue during verification')
+        #api.update_status("Hello World!")
+
+        api.update_status("Hello World!")
+
+        #try:
+        #    api.verify_credentials()
+        #    print('verification ok')
+        #except:
+        #    print('Issue during verification')
 
 if __name__ == "__main__":
     tweeter = Tweeter()
