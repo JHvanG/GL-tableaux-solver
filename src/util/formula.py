@@ -56,3 +56,30 @@ class Formula(object):
                 formula_as_string = formula_as_string + self.formula_two.convert_to_string()
 
             return formula_as_string
+
+    # this function returns the string representation of a formula with the unicode characters
+    def convert_to_tweet(self):
+        if self.is_atom:
+            if str(self.formula_one) == '#':
+                return self.twitter_character
+            else:
+                return str(self.formula_one)
+        elif not self.binary:
+            if self.formula_one.binary:
+                return self.twitter_character + '(' + self.formula_one.convert_to_string() + ')'
+            else:
+                return self.twitter_character + self.formula_one.convert_to_string()
+        else:
+            if self.formula_one.binary:
+                formula_as_string = '(' + self.formula_one.convert_to_string() + ')'
+            else:
+                formula_as_string = self.formula_one.convert_to_string()
+
+            formula_as_string += self.twitter_character
+
+            if self.formula_two.binary:
+                formula_as_string = formula_as_string + '(' + self.formula_two.convert_to_string() + ')'
+            else:
+                formula_as_string = formula_as_string + self.formula_two.convert_to_string()
+
+            return formula_as_string

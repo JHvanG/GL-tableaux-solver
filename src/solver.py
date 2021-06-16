@@ -157,7 +157,7 @@ class Solver(object):
 
             branch = self.order_tree(branch)
 
-
+            '''
             # temporary print statements for debugging
             #print(self.tree)
             print('\n\ncurrent:')
@@ -170,6 +170,7 @@ class Solver(object):
             for lst in self.applied_rules:
                 for form in lst:
                     print(form.convert_to_string(), form.world)
+            '''
 
 
             if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):

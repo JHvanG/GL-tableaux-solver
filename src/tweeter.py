@@ -17,7 +17,7 @@ class Tweeter(object):
 
         #api.update_status("Hello World!")
 
-        api.update_status("Hello World!")
+        api.update_status("\u00AC \u2227 \u2228 \u21FF \u21FE \u22A5 \u25A1 \u25C7")
 
         #try:
         #    api.verify_credentials()
