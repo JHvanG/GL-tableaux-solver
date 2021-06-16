@@ -7,7 +7,6 @@ import timeit
 
 class Solver(object):
     def __init__(self):
-        self.tree = []
         self.applied_rules = []
         self.worlds = [0]
         self.relations = []
@@ -17,10 +16,10 @@ class Solver(object):
         self.data_handler = data_handler.DataHandler()
 
     def reset(self):
-        self.tree = []
         self.applied_rules = []
         self.worlds = [0]
         self.relations = []
+        self.depth = 0
         self.open_branch = False
         self.new_relation = False
 
@@ -42,32 +41,6 @@ class Solver(object):
             if not isinstance(item, list):
                 unapplied_rules.append(item)
         return unapplied_rules
-
-    # This method keeps the specified branch up to date with any adjustments
-    def update_branch(self, branch, current_depth, altered_branch):
-        for item in branch:
-            if isinstance(item, list):
-                if current_depth == self.depth - 1:
-                    branch[branch.index(item)] = altered_branch
-                    return branch
-                else:
-                    current_depth += 1
-                    branch[branch.index(item)] = self.update_branch(item, current_depth, altered_branch)
-                    return branch
-
-    # TODO: DO I NEED THIS SINCE THE BRANCH CONTAINS ALL RELEVANT INFO ALREADY
-    # This method keeps the entire search tree up to date
-    def update_tree(self, altered_branch):
-        if self.depth == 0:
-            self.tree = altered_branch
-        else:
-            for item in self.tree:
-                if isinstance(item, list):
-                    if self.depth == 1:
-                        self.tree[self.tree.index(item)] = altered_branch
-                        break
-                    else:
-                        self.update_branch(item, 1, altered_branch)
 
     # This method orders the input branch so that all atoms and negated atoms are last to allow the loop to work
     def order_tree(self, branch):
@@ -144,8 +117,6 @@ class Solver(object):
         branch_two_closed = False
 
         while branch and not self.open_branch:
-            #self.update_tree(branch)
-
             if branch_one_closed and branch_two_closed:
                 return
 
@@ -159,7 +130,6 @@ class Solver(object):
 
             '''
             # temporary print statements for debugging
-            #print(self.tree)
             print('\n\ncurrent:')
             for form in branch:
                 if isinstance(form, list):
@@ -193,8 +163,6 @@ class Solver(object):
                     branch.remove(branch[0])
 
             elif isinstance(branch[0], formula.Formula):
-                #if self.has_contradiction(branch[0], self.tree):
-                #    return
                 if self.contradiction(branch[0], branch):
                     return
                 # a contradiction immediately closes the present branch
@@ -215,8 +183,6 @@ class Solver(object):
                         branch = branch[0].branch(branch, self)
                         self.applied_rules[len(self.applied_rules) - 1].append(branch[0])
                         branch.remove(branch[0])
-                    # reorganise the branch
-                    #branch = self.order_tree(branch)
 
                     for item in branch:
                         if isinstance(item, list):
@@ -231,6 +197,7 @@ class Solver(object):
     # This is the main method of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
         print(form.convert_to_string())
+        print(form.convert_to_tweet())
 
         start_time = timeit.default_timer()
         tracemalloc.start()
@@ -259,23 +226,22 @@ class Solver(object):
 
 
 if __name__ == "__main__":
-    # TODO: ADD UNICODE CHARACTER TO #
     # valid:
     #test = disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), box.Box(box.Box(formula.Formula(None, "A", None, True, False))))
-    #test = negation.Negation(formula.Formula(None, '#', None, True, False, None))
+    #test = negation.Negation(formula.Formula(None, "#", None, True, False, None, '\u22A5'))
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "B", None, True, False)), disjunction.Disjunction(negation.Negation(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
-    #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, '#', None, True, False, None)))
-    #test = box.Box(implication.Implication(diamond.Diamond(formula.Formula(None, '#', None, True, False, None)), conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))
+    #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "#", None, True, False, None, '\u22A5')))
+    #test = box.Box(implication.Implication(diamond.Diamond(formula.Formula(None, "#", None, True, False, None, '\u22A5')), conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))
 
     # invalid:
     #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))
     #test = disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))
     #test = box.Box(box.Box(formula.Formula(None, "A", None, True, False)))
-    #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, '#', None, True, False, None)),negation.Negation(formula.Formula(None, '#', None, True, False, None))), formula.Formula(None, 'A', None, True, False, None)))
-    #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, '#', None, True, False, None), formula.Formula(None, '#', None, True, False, None)), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
+    #test = conjunction.Conjunction(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), negation.Negation(formula.Formula(None, 'A', None, True, False, None))), conjunction.Conjunction(conjunction.Conjunction(negation.Negation(formula.Formula(None, "#", None, True, False, None, '\u22A5')),negation.Negation(formula.Formula(None, "#", None, True, False, None, '\u22A5'))), formula.Formula(None, 'A', None, True, False, None)))
+    #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "#", None, True, False, None, '\u22A5'), formula.Formula(None, "#", None, True, False, None, '\u22A5')), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
     test = conjunction.Conjunction(box.Box(box.Box(diamond.Diamond(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))), box.Box(box.Box(diamond.Diamond(box.Box(diamond.Diamond(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))))))))
 

@@ -66,20 +66,20 @@ class Formula(object):
                 return str(self.formula_one)
         elif not self.binary:
             if self.formula_one.binary:
-                return self.twitter_character + '(' + self.formula_one.convert_to_string() + ')'
+                return self.twitter_character + '(' + self.formula_one.convert_to_tweet() + ')'
             else:
-                return self.twitter_character + self.formula_one.convert_to_string()
+                return self.twitter_character + self.formula_one.convert_to_tweet()
         else:
             if self.formula_one.binary:
-                formula_as_string = '(' + self.formula_one.convert_to_string() + ')'
+                formula_as_string = '(' + self.formula_one.convert_to_tweet() + ')'
             else:
-                formula_as_string = self.formula_one.convert_to_string()
+                formula_as_string = self.formula_one.convert_to_tweet()
 
             formula_as_string += self.twitter_character
 
             if self.formula_two.binary:
-                formula_as_string = formula_as_string + '(' + self.formula_two.convert_to_string() + ')'
+                formula_as_string = formula_as_string + '(' + self.formula_two.convert_to_tweet() + ')'
             else:
-                formula_as_string = formula_as_string + self.formula_two.convert_to_string()
+                formula_as_string = formula_as_string + self.formula_two.convert_to_tweet()
 
             return formula_as_string
