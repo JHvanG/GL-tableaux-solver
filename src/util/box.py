@@ -9,23 +9,27 @@ class Box(Formula):
         self.applied_to_all = False
         pass
 
-    def branch(self, branch, solver):
+    def branch(self, solver):
         i = self.world
         all_relations = [item for sublist in solver.relations for item in sublist]
+        return_list = []
         for relation in all_relations:
             if relation[0] == i and relation not in self.applied_relations:
                 j = relation[1]
-                formula_a = copy.deepcopy(self.formula_one)
-                formula_b = copy.deepcopy(self.formula_one)
+                form_a = copy.deepcopy(self.formula_one)
+                form_b = copy.deepcopy(self.formula_one)
                 self.applied_relations.append([i, j])
-                branch.append(Box(formula_a, j))
-                formula_b.world = j
-                branch.append(formula_b)
+                form_b.world = j
+                #if not solver.already_on_branch(Box(form_a, j), branch):
+                return_list.append(Box(form_a, j))
+                #if not solver.already_on_branch(form_b, branch):
+                return_list.append(form_b)
 
-        return branch
+        return return_list
 
-    def branch_negated(self, branch, solver):
+    def branch_negated(self, solver):
         from .diamond import Diamond
         from .negation import Negation
-        branch.append(Diamond(Negation(self.formula_one), self.world))
-        return branch
+        #branch.append(Diamond(Negation(self.formula_one), self.world))
+        #return branch
+        return [Diamond(Negation(self.formula_one), self.world)]
