@@ -7,7 +7,7 @@ import pickle, os
 
 class Generator(object):
     def __init__(self):
-        self.within_length = False
+        self.within_length = True
         self.position = 0
         self.generator_on = False
         self.formula_complexity = 0
@@ -51,6 +51,10 @@ class Generator(object):
                 elif connective == ConnectiveType.DIAMOND:
                     new_form = diamond.Diamond(form)
 
+                # immediately check formulas
+                if self.check_length(new_form):
+                    self.solver.solve_formula(new_form)
+                    #print(new_form.convert_to_tweet())
                 formula_list.append(new_form)
 
         return formula_list
@@ -76,11 +80,22 @@ class Generator(object):
                         formula_list.append(disjunction.Disjunction(form_a, form_b))
                     elif connective == ConnectiveType.IMPLICATION:
                         formula_list.append(implication.Implication(form_a, form_b))
-                        # a -> b != b -> a
-                        if not form_a.equals(form_b) and not min == max:
-                            formula_list.append(implication.Implication(form_b, form_a))
                     elif connective == ConnectiveType.BIIMPLICATION:
                         formula_list.append(bi_implication.BiImplication(form_a, form_b))
+
+                    # immediately check formulas
+                    if self.check_length(formula_list[len(formula_list) - 1]):
+                        self.solver.solve_formula(formula_list[len(formula_list) - 1])
+                        #print(formula_list[len(formula_list) - 1].convert_to_tweet())
+
+                    # a -> b != b -> a
+                    if connective == ConnectiveType.IMPLICATION and not form_a.equals(form_b) and not min == max:
+                        formula_list.append(implication.Implication(form_b, form_a))
+                        # immediately check formulas
+                        if self.check_length(formula_list[len(formula_list) - 1]):
+                            self.solver.solve_formula(formula_list[len(formula_list) - 1])
+                            #print(formula_list[len(formula_list) - 1].convert_to_tweet())
+
 
         return formula_list
 
@@ -108,12 +123,14 @@ class Generator(object):
         new_formulas = self.create_unary_connectives(max)
 
         while min <= max:
+            print(min, max)
             new_formulas += self.create_binary_connectives(min, max)
             min += 1
 
-        for form in new_formulas:
-            if self.check_length(form):
-                self.solver.solve_formula(form)
+        #for form in new_formulas:
+            #if self.check_length(form):
+            #    self.solver.solve_formula(form)
+            #print(form.convert_to_tweet())
 
         if not self.within_length:
             self.generator_on = False

@@ -264,8 +264,9 @@ class Solver(object):
 
         if not self.open_branch:
             #print(form.convert_to_tweet())
-            self.data_handler.write_memory_data([length, peak])
+            #self.data_handler.write_memory_data([length, peak])
             #self.data_handler.write_time_data([length, time])
+            self.data_handler.write_tautology([length, form.convert_to_string()])
 
         #print(form.get_length(), peak, time)
 
@@ -294,7 +295,7 @@ if __name__ == "__main__":
     #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
     #test = conjunction.Conjunction(box.Box(box.Box(diamond.Diamond(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))), box.Box(box.Box(diamond.Diamond(box.Box(diamond.Diamond(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))))))))
 
-    test = bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False)), disjunction.Disjunction(formula.Formula(None, "#", None, True, False, None, '\u22A5'), formula.Formula(None, "A", None, True, False)))
+    #test = bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False)), disjunction.Disjunction(formula.Formula(None, "#", None, True, False, None, '\u22A5'), formula.Formula(None, "A", None, True, False)))
 
     # TEST SET FROM VAN LOO
     '''
@@ -573,7 +574,7 @@ if __name__ == "__main__":
     )
     '''
 
-    '''
+
     #DOES NOT PRODUCE AN ANSWER IN REASONABLE TIME
     test = disjunction.Disjunction(
         disjunction.Disjunction(
@@ -750,7 +751,7 @@ if __name__ == "__main__":
             )
         )
     )
-    '''
+
 
     solver = Solver()
     solver.solve_formula(test)
