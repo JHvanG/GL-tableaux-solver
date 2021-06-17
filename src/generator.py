@@ -51,8 +51,6 @@ class Generator(object):
                 elif connective == ConnectiveType.DIAMOND:
                     new_form = diamond.Diamond(form)
 
-                # solve each new formula right away
-                self.solver.solve_formula(new_form)
                 formula_list.append(new_form)
 
         return formula_list
@@ -71,24 +69,18 @@ class Generator(object):
 
         for connective in binary_connectives:
             for form_a in previous_formulas_min:
-                index_a = previous_formulas_min.index(form_a)
                 for form_b in previous_formulas_max:
-                    index_b = previous_formulas_max.index(form_b)
-                    if index_a > index_b:
-                        if connective == ConnectiveType.IMPLICATION:
-                            formula_list.append(implication.Implication(form_a, form_b))
-                    else:
-                        if connective == ConnectiveType.CONJUNCTION:
-                            formula_list.append(conjunction.Conjunction(form_a, form_b))
-                        elif connective == ConnectiveType.DISJUNCTION:
-                            formula_list.append(disjunction.Disjunction(form_a, form_b))
-                        elif connective == ConnectiveType.IMPLICATION:
-                            formula_list.append(implication.Implication(form_a, form_b))
-                        elif connective == ConnectiveType.BIIMPLICATION:
-                            formula_list.append(bi_implication.BiImplication(form_a, form_b))
-
-                    # solve each new formula right away
-                    self.solver.solve_formula(formula_list[len(formula_list) - 1])
+                    if connective == ConnectiveType.CONJUNCTION:
+                        formula_list.append(conjunction.Conjunction(form_a, form_b))
+                    elif connective == ConnectiveType.DISJUNCTION:
+                        formula_list.append(disjunction.Disjunction(form_a, form_b))
+                    elif connective == ConnectiveType.IMPLICATION:
+                        formula_list.append(implication.Implication(form_a, form_b))
+                        # a -> b != b -> a
+                        if not form_a.equals(form_b) and not min == max:
+                            formula_list.append(implication.Implication(form_b, form_a))
+                    elif connective == ConnectiveType.BIIMPLICATION:
+                        formula_list.append(bi_implication.BiImplication(form_a, form_b))
 
         return formula_list
 

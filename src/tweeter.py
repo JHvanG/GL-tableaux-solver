@@ -9,7 +9,7 @@ class Tweeter(object):
         self.key = keys.access_token
         self.secret = keys.access_secret
 
-    def tweet_tautology(self):
+    def tweet_tautology(self, formula):
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.key, self.secret)
 

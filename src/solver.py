@@ -1,6 +1,6 @@
 import copy
 
-from src import data_handler
+from data_handler import DataHandler
 from util import formula, negation, box, diamond, conjunction, disjunction, implication, bi_implication
 import tracemalloc
 import itertools
@@ -14,7 +14,7 @@ class Solver(object):
         self.relations = []
         self.open_branch = False
         self.new_relation = False
-        self.data_handler = data_handler.DataHandler()
+        self.data_handler = DataHandler()
 
     def reset(self):
         self.applied_rules = []
@@ -137,6 +137,7 @@ class Solver(object):
 
             branch = self.order_tree(branch)
 
+            '''
             # temporary print statements for debugging
             print('\n\ncurrent:')
             for form in branch:
@@ -151,7 +152,7 @@ class Solver(object):
             for lst in self.applied_rules:
                 for form in lst:
                     print(form.convert_to_string(), form.world)
-
+            '''
 
             if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):
                 self.applied_rules.append([])
@@ -243,29 +244,30 @@ class Solver(object):
 
     # This is the main function of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        print(form.convert_to_string())
-        print(form.convert_to_tweet())
+        #print(form.convert_to_tweet())
 
-        start_time = timeit.default_timer()
+        #start_time = timeit.default_timer()
         tracemalloc.start()
 
         self.applied_rules.append([])
         self.relations.append([])
         self.check_branch([negation.Negation(form, self.worlds[0])])
 
-        if self.open_branch:
-            print("invalid formula")
-        else:
-            print("valid formula")
+        #if self.open_branch:
+        #    print("invalid formula")
+        #else:
+        #    print("valid formula")
 
         current, peak = tracemalloc.get_traced_memory()
-        time = timeit.default_timer() - start_time
+        #time = timeit.default_timer() - start_time
         length = form.get_length()
 
         if not self.open_branch:
-            self.data_handler.write_data([length, peak, time])
+            #print(form.convert_to_tweet())
+            self.data_handler.write_memory_data([length, peak])
+            #self.data_handler.write_time_data([length, time])
 
-        print(form.get_length(), peak, time)
+        #print(form.get_length(), peak, time)
 
         tracemalloc.stop()
 
@@ -291,6 +293,8 @@ if __name__ == "__main__":
     #test = disjunction.Disjunction(conjunction.Conjunction(formula.Formula(None, "#", None, True, False, None, '\u22A5'), formula.Formula(None, "#", None, True, False, None, '\u22A5')), bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, 'A', None, True, False, None), formula.Formula(None, 'A', None, True, False, None)), disjunction.Disjunction(formula.Formula(None, "B", None, True, False), formula.Formula(None, "B", None, True, False))))
     #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
     #test = conjunction.Conjunction(box.Box(box.Box(diamond.Diamond(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))), box.Box(box.Box(diamond.Diamond(box.Box(diamond.Diamond(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))))))))
+
+    test = bi_implication.BiImplication(disjunction.Disjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False)), disjunction.Disjunction(formula.Formula(None, "#", None, True, False, None, '\u22A5'), formula.Formula(None, "A", None, True, False)))
 
     # TEST SET FROM VAN LOO
     '''
@@ -569,6 +573,8 @@ if __name__ == "__main__":
     )
     '''
 
+    '''
+    #DOES NOT PRODUCE AN ANSWER IN REASONABLE TIME
     test = disjunction.Disjunction(
         disjunction.Disjunction(
             conjunction.Conjunction(
@@ -744,6 +750,7 @@ if __name__ == "__main__":
             )
         )
     )
+    '''
 
     solver = Solver()
     solver.solve_formula(test)
