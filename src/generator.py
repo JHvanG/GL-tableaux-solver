@@ -54,7 +54,6 @@ class Generator(object):
                 # immediately check formulas
                 if self.check_length(new_form):
                     self.solver.solve_formula(new_form)
-                    #print(new_form.convert_to_tweet())
                 formula_list.append(new_form)
 
         return formula_list
@@ -86,7 +85,6 @@ class Generator(object):
                     # immediately check formulas
                     if self.check_length(formula_list[len(formula_list) - 1]):
                         self.solver.solve_formula(formula_list[len(formula_list) - 1])
-                        #print(formula_list[len(formula_list) - 1].convert_to_tweet())
 
                     # a -> b != b -> a
                     if connective == ConnectiveType.IMPLICATION and not form_a.equals(form_b) and not min == max:
@@ -94,8 +92,6 @@ class Generator(object):
                         # immediately check formulas
                         if self.check_length(formula_list[len(formula_list) - 1]):
                             self.solver.solve_formula(formula_list[len(formula_list) - 1])
-                            #print(formula_list[len(formula_list) - 1].convert_to_tweet())
-
 
         return formula_list
 

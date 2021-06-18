@@ -1,6 +1,7 @@
 import copy
 
 from data_handler import DataHandler
+from tweeter import Tweeter
 from util import formula, negation, box, diamond, conjunction, disjunction, implication, bi_implication
 import tracemalloc
 import itertools
@@ -15,6 +16,7 @@ class Solver(object):
         self.open_branch = False
         self.new_relation = False
         self.data_handler = DataHandler()
+        self.tweeter = Tweeter()
 
     def reset(self):
         self.applied_rules = []
@@ -137,23 +139,6 @@ class Solver(object):
 
             branch = self.order_tree(branch)
 
-            '''
-            # temporary print statements for debugging
-            print('\n\ncurrent:')
-            for form in branch:
-                if isinstance(form, list):
-                    print('branch')
-                else:
-                    print(form.convert_to_string(), form.world)
-            print('\nrelations:')
-            all_relations = [item for sublist in self.relations for item in sublist]
-            print(all_relations)
-            print('\napplied:')
-            for lst in self.applied_rules:
-                for form in lst:
-                    print(form.convert_to_string(), form.world)
-            '''
-
             if isinstance(branch[0], list) or (branch_one_opened and branch_two_opened):
                 self.applied_rules.append([])
                 self.relations.append([])
@@ -260,13 +245,14 @@ class Solver(object):
 
         #current, peak = tracemalloc.get_traced_memory()
         #time = timeit.default_timer() - start_time
-        length = form.get_length()
+        #length = form.get_length()
 
         if not self.open_branch:
             #print(form.convert_to_tweet())
             #self.data_handler.write_memory_data([length, peak])
             #self.data_handler.write_time_data([length, time])
-            self.data_handler.write_tautology([length, form.convert_to_string()])
+            #self.data_handler.write_tautology([length, form.convert_to_string()])
+            self.tweeter.tweet_tautology(form)
 
         #print(form.get_length(), peak, time)
 
