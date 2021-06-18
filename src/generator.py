@@ -123,7 +123,6 @@ class Generator(object):
         new_formulas = self.create_unary_connectives(max)
 
         while min <= max:
-            print(min, max)
             new_formulas += self.create_binary_connectives(min, max)
             min += 1
 

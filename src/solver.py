@@ -247,7 +247,7 @@ class Solver(object):
         #print(form.convert_to_tweet())
 
         #start_time = timeit.default_timer()
-        tracemalloc.start()
+        #tracemalloc.start()
 
         self.applied_rules.append([])
         self.relations.append([])
@@ -258,7 +258,7 @@ class Solver(object):
         #else:
         #    print("valid formula")
 
-        current, peak = tracemalloc.get_traced_memory()
+        #current, peak = tracemalloc.get_traced_memory()
         #time = timeit.default_timer() - start_time
         length = form.get_length()
 
@@ -270,7 +270,7 @@ class Solver(object):
 
         #print(form.get_length(), peak, time)
 
-        tracemalloc.stop()
+        #tracemalloc.stop()
 
         self.reset()
 
