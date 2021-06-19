@@ -16,8 +16,9 @@ class Tweeter(object):
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.key, self.secret)
         api = tweepy.API(auth)
-        api.update_status(formula.convert_to_tweet())
-        self.next_tweet_at = datetime.datetime.now() + datetime.timedelta(minutes=3*60)
+        #api.update_status(formula.convert_to_tweet())
+        print(formula.convert_to_tweet())
+        self.next_tweet_at = datetime.datetime.now() + datetime.timedelta(hours=3)
 
     def tweet_tautology(self, formula):
         if not self.next_tweet_at:
@@ -25,8 +26,9 @@ class Tweeter(object):
         else:
             difference = self.next_tweet_at - datetime.datetime.now()
             difference_in_minutes = difference.total_seconds() / 60
-            if 0 <= difference_in_minutes < 3*60:
-                sleep((3*60 - difference_in_minutes) * 60)
+            print('at:', datetime.datetime.now(), difference, int(difference_in_minutes))
+            if 0 < int(difference_in_minutes) <= 180:
+                sleep(difference_in_minutes * 60)
             self.send_tweet(formula)
 
 
