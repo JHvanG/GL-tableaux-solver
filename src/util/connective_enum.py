@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class ConnectiveType(Enum):
     NEGATION = 1
     BOX = 2

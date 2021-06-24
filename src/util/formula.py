@@ -1,5 +1,6 @@
 class Formula(object):
-    def __init__(self, character, formula_one, formula_two=None, is_atom=False, binary=True):
+    # TODO: I think I should actually remove all getters and setters
+    def __init__(self, character, formula_one, formula_two=None, is_atom=False, binary=True, world=None, twitter_character=None):
         # character representing connective
         self.character = character
         # boolean for a single atom
@@ -9,67 +10,76 @@ class Formula(object):
         # connected formulae
         self.formula_one = formula_one
         self.formula_two = formula_two
+        # world of the formula
+        self.world = world
+        # unicode character
+        self.twitter_character = twitter_character
 
-    def get_character(self):
-        return self.character
+    # overwritten standard method called when == is used, which does not check world number
+    def __eq__(self, other):
+        if not isinstance(other, Formula):
+            return False
+        else:
+            return self.character == other.character and self.formula_one == other.formula_one and \
+                   self.formula_two == other.formula_two and self.is_atom == other.is_atom and \
+                   self.binary == other.binary  # and self.world == other.world
 
-    def get_is_atom(self):
-        return self.is_atom
+    # this function includes a check for the correct world of the outer connective, as well as equality for the formula
+    def equals(self, other):
+        return self.world == other.world and self == other
 
-    def get_binary(self):
-        return self.binary
+    # this function returns the length of the string representation fo the formula (including brackets)
+    def get_length(self):
+        return len(self.convert_to_string())
 
-    def get_formula_one(self):
-        return self.formula_one
-
-    def set_formula_one(self, formula):
-        self.formula_one = formula
-        return
-
-    def get_formula_two(self):
-        return self.formula_two
-
-    def set_formula_two(self, formula):
-        self.formula_two = formula
-
-    # method to fill in the first empty spot in a formula being generated
-    # returns true if a None element is filled in, else it returns false
-    def fill_in(self, filler):
-        if not self.is_atom:
-            if self.formula_one() is None:
-                self.formula_one = filler
-                return True
-            elif self.binary and self.formula_two() is None:
-                self.formula_two = filler
-                return True
-            else:
-                if not self.formula_one.is_atom():
-                    if self.formula_one.fill_in(filler):
-                        return True
-                elif self.binary and not self.formula_two.is_atom():
-                    return self.formula_two.fill_in(filler)
-        
-        return False
-
-    # method to print the formula with proper brackets in place
+    # this function returns the string representation of a formula
     def convert_to_string(self):
+        # any binary connective within another connective is put between brackets
         if self.is_atom:
             return str(self.formula_one)
         elif not self.binary:
-            return self.character + self.formula_one.convert_to_string()
+            if self.formula_one.binary:
+                return self.character + '(' + self.formula_one.convert_to_string() + ')'
+            else:
+                return self.character + self.formula_one.convert_to_string()
         else:
-            if self.formula_one.get_binary():
-               formula_as_string = "(" + self.formula_one.convert_to_string() + ")"
+            if self.formula_one.binary:
+                formula_as_string = '(' + self.formula_one.convert_to_string() + ')'
             else:
                 formula_as_string = self.formula_one.convert_to_string()
 
             formula_as_string += self.character
 
-            if self.formula_two.get_binary():
-                formula_as_string += "(" + self.formula_two.convert_to_string() + ")"
+            if self.formula_two.binary:
+                formula_as_string = formula_as_string + '(' + self.formula_two.convert_to_string() + ')'
             else:
-                formula_as_string += self.formula_two.convert_to_string()
+                formula_as_string = formula_as_string + self.formula_two.convert_to_string()
 
             return formula_as_string
 
-    # def find_unique(self):
+    # this function returns the string representation of a formula with the unicode characters
+    def convert_to_tweet(self):
+        if self.is_atom:
+            if str(self.formula_one) == '#':
+                return self.twitter_character
+            else:
+                return str(self.formula_one)
+        elif not self.binary:
+            if self.formula_one.binary:
+                return self.twitter_character + '(' + self.formula_one.convert_to_tweet() + ')'
+            else:
+                return self.twitter_character + self.formula_one.convert_to_tweet()
+        else:
+            if self.formula_one.binary:
+                formula_as_string = '(' + self.formula_one.convert_to_tweet() + ')'
+            else:
+                formula_as_string = self.formula_one.convert_to_tweet()
+
+            formula_as_string += self.twitter_character
+
+            if self.formula_two.binary:
+                formula_as_string = formula_as_string + '(' + self.formula_two.convert_to_tweet() + ')'
+            else:
+                formula_as_string = formula_as_string + self.formula_two.convert_to_tweet()
+
+            return formula_as_string

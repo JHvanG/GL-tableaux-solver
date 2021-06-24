@@ -1,70 +1,154 @@
-from util import negation, conjunction
-from util import formula
-from util import connective_enum
+from solver import Solver
+from util import formula, negation, box, diamond, disjunction, conjunction, implication, bi_implication
+from util.connective_enum import ConnectiveType
+from pathlib import Path
+import pickle, os
 
 
 class Generator(object):
     def __init__(self):
-        self.total_length = 1
-        self.intermediate_formula = None
-        self.resulting_formula = None
+        self.within_length = True
         self.position = 0
+        self.generator_on = False
+        self.formula_complexity = 0
+        self.storage_path = os.path.join(Path(__file__).parents[1], "storage")
+        self.solver = Solver()
+        self.twitter_msg_len = 288
 
-    def get_total_length(self):
-        return self.total_length
+    # This method is responsible for saving the formulas a .form file using pickle
+    def save_to_file(self, formula_list):
+        filepath = os.path.join(self.storage_path, "formula_set_" + str(self.formula_complexity) + ".form")
+        with open(filepath, 'wb') as file:
+            for form in formula_list:
+                pickle.dump(form, file, pickle.HIGHEST_PROTOCOL)
 
-    def set_total_length(self, new_length):
-        self.total_length = new_length
+    def read_from_file(self, filepath):
+        formulas = []
+        with open(filepath, 'rb') as file:
+            while True:
+                try:
+                    temp = pickle.load(file)
+                    if isinstance(temp, formula.Formula):
+                        formulas.append(temp)
+                except EOFError:
+                    return formulas
 
-    def create_formula(self, formula_length):
-        if formula_length == 1:
-            # TODO: have more than one letter
-            self.position += 1
-            self.update_resulting_formula(formula.Formula(None, "A", None, True, False))
-            self.check_complete()
-            self.position -= 1
-        elif formula_length == 2:
-            # TODO: also add box and diamond based on what has been used using the ENUM (+1)
-            self.position += 2
-            self.update_resulting_formula(negation.Negation("A"))
-            self.check_complete()
-            self.position -= 2
-        else:
-            # TODO: make sure any connective can be used here
-            len_one = formula_length - 2
-            len_two = formula_length - len_one - 1
+    # This method returns a list of all unary connectives based on the formulas of the previous complexity
+    def create_unary_connectives(self, n):
+        connectives = [ConnectiveType.NEGATION, ConnectiveType.BOX, ConnectiveType.DIAMOND]
 
-            while len_one >= 1:
-                print("Hello")
-                # note that the first AND second formulas are set to None, these are filled in recursively
-                self.update_resulting_formula(conjunction.Conjunction(None, None))
-                # TODO: this currently assumes a binary connective is used!!!
-                self.create_formula(len_one)
-                self.position += (formula_length - len_two)
-                self.create_formula(len_two)
-                self.position -= (formula_length - len_two)
+        filepath = os.path.join(self.storage_path, "formula_set_" + str(n) + ".form")
+        previous_formulas = self.read_from_file(filepath)
 
-                len_one -= 1
-                len_two += 1
+        formula_list = []
+        for connective in connectives:
+            for form in previous_formulas:
+                new_form = None
+                if connective == ConnectiveType.NEGATION:
+                    new_form = negation.Negation(form)
+                elif connective == ConnectiveType.BOX:
+                    new_form = box.Box(form)
+                elif connective == ConnectiveType.DIAMOND:
+                    new_form = diamond.Diamond(form)
 
-    # this method is responsible for keeping the resulting formula up to date
-    def update_resulting_formula(self, filler):
-        if self.resulting_formula is None:
-            self.resulting_formula = filler
-        else:
-            self.resulting_formula.fill_in(filler)
+                # immediately check formulas
+                if self.check_length(new_form):
+                    self.solver.solve_formula(new_form)
+                formula_list.append(new_form)
 
-    # this method checks whether a complete formula is produced and prints if that is the case
-    def check_complete(self):
-        if self.position == self.total_length:
-            print(self.resulting_formula.convert_to_string())
+        return formula_list
 
-    def start(self):
-        while True:
-            self.create_formula(self.total_length)
-            self.total_length += 1
+    # This method returns a list of all binary connectives based on the formulas of the previous complexity
+    def create_binary_connectives(self, min, max):
+        binary_connectives = [ConnectiveType.CONJUNCTION, ConnectiveType.DISJUNCTION,
+                              ConnectiveType.IMPLICATION, ConnectiveType.BIIMPLICATION]
+        filepath_min = os.path.join(self.storage_path, "formula_set_" + str(min) + ".form")
+        filepath_max = os.path.join(self.storage_path, "formula_set_" + str(max) + ".form")
+
+        previous_formulas_min = self.read_from_file(filepath_min)
+        previous_formulas_max = self.read_from_file(filepath_max)
+
+        formula_list = []
+
+        for connective in binary_connectives:
+            for form_a in previous_formulas_min:
+                for form_b in previous_formulas_max:
+                    if connective == ConnectiveType.CONJUNCTION:
+                        formula_list.append(conjunction.Conjunction(form_a, form_b))
+                    elif connective == ConnectiveType.DISJUNCTION:
+                        formula_list.append(disjunction.Disjunction(form_a, form_b))
+                    elif connective == ConnectiveType.IMPLICATION:
+                        formula_list.append(implication.Implication(form_a, form_b))
+                    elif connective == ConnectiveType.BIIMPLICATION:
+                        formula_list.append(bi_implication.BiImplication(form_a, form_b))
+
+                    # immediately check formulas
+                    if self.check_length(formula_list[len(formula_list) - 1]):
+                        self.solver.solve_formula(formula_list[len(formula_list) - 1])
+
+                    # a -> b != b -> a
+                    if connective == ConnectiveType.IMPLICATION and not form_a.equals(form_b) and not min == max:
+                        formula_list.append(implication.Implication(form_b, form_a))
+                        # immediately check formulas
+                        if self.check_length(formula_list[len(formula_list) - 1]):
+                            self.solver.solve_formula(formula_list[len(formula_list) - 1])
+
+        return formula_list
+
+    # This method will produce and save the two atoms A and B
+    def generate_atoms(self):
+        atom_one = formula.Formula(None, "A", None, True, False)
+        atom_two = formula.Formula(None, "B", None, True, False)
+        atom_three = formula.Formula(None, "#", None, True, False, None, '\u22A5')
+        formula_list = [atom_one, atom_two, atom_three]
+        self.save_to_file(formula_list)
+
+    # This method will produce and save combinations of the previously saved formulas
+    def generate_combinations(self):
+        """
+        unary: ~, +, -
+        binary: &, |, >, =
+        Complexity 1: unary on {0} and binary on {0,0}
+        Complexity 2: unary on {1} and binary on {0,1} and {1,1}
+        Complexity 3: unary on {2} and binary on {0,2}, {1,2} and {2,2}
+        """
+
+        min = 0
+        max = self.formula_complexity - 1
+
+        new_formulas = self.create_unary_connectives(max)
+
+        while min <= max:
+            new_formulas += self.create_binary_connectives(min, max)
+            min += 1
+
+        #for form in new_formulas:
+            #if self.check_length(form):
+            #    self.solver.solve_formula(form)
+            #print(form.convert_to_tweet())
+
+        if not self.within_length:
+            self.generator_on = False
+
+        self.save_to_file(new_formulas)
+
+    def check_length(self, form):
+        if len(form.convert_to_string()) <= self.twitter_msg_len:
+            self.within_length = True
+            return True
+        return False
+
+    def create_formula(self):
+        while self.generator_on:
+            if self.formula_complexity == 0:
+                self.generate_atoms()
+            else:
+                self.generate_combinations()
+
+            self.formula_complexity += 1
 
 
 if __name__ == "__main__":
     generator = Generator()
-    generator.start()
+    generator.generator_on = True
+    generator.create_formula()
