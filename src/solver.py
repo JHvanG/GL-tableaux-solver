@@ -184,14 +184,9 @@ class Solver(object):
                             return
                     # for all other connectives, apply the rule, add it to the applied_rules list and remove from the active branch
                     else:
-                        #branch = branch[0].branch(branch, self)
                         new_formulas = branch[0].branch(self)
 
                         for item in new_formulas:
-                            #for form in branch:
-                            #    if not isinstance(form, list):
-                            #        if not isinstance(item, list):
-                            #            print('Checking', item.convert_to_string(), 'against', form.convert_to_string(), form.world)
                             if isinstance(item, formula.Formula) and not self.already_on_branch(item, branch):
                                 if self.contradiction(item, branch):
                                     return
@@ -229,10 +224,11 @@ class Solver(object):
 
     # This is the main function of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        #print(form.convert_to_tweet())
+        print(form.convert_to_string())
+        print(form.get_length())
 
         #start_time = timeit.default_timer()
-        #tracemalloc.start()
+        tracemalloc.start()
 
         self.applied_rules.append([])
         self.relations.append([])
@@ -243,20 +239,20 @@ class Solver(object):
         #else:
         #    print("valid formula")
 
-        #current, peak = tracemalloc.get_traced_memory()
+        current, peak = tracemalloc.get_traced_memory()
         #time = timeit.default_timer() - start_time
         #length = form.get_length()
 
-        if not self.open_branch:
+        #if not self.open_branch:
             #print(form.convert_to_tweet())
             #self.data_handler.write_memory_data([length, peak])
             #self.data_handler.write_time_data([length, time])
             #self.data_handler.write_tautology([length, form.convert_to_string()])
-            self.tweeter.tweet_tautology(form)
+            #self.tweeter.tweet_tautology(form)
 
-        #print(form.get_length(), peak, time)
+        print(peak)
 
-        #tracemalloc.stop()
+        tracemalloc.stop()
 
         self.reset()
 
@@ -271,6 +267,8 @@ if __name__ == "__main__":
     #test = implication.Implication(box.Box(implication.Implication(box.Box(formula.Formula(None, "A", None, True, False)), formula.Formula(None, "A", None, True, False))), box.Box(formula.Formula(None, "A", None, True, False)))
     #test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "#", None, True, False, None, '\u22A5')))
     #test = box.Box(implication.Implication(diamond.Diamond(formula.Formula(None, "#", None, True, False, None, '\u22A5')), conjunction.Conjunction(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))
+    #test = box.Box(disjunction.Disjunction(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False)), box.Box(formula.Formula(None, "A", None, True, False))))
+    #test = box.Box(disjunction.Disjunction(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, "B", None, True, False))))
 
     # invalid:
     #test = conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))

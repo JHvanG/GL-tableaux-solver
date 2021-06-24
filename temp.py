@@ -262,6 +262,7 @@ if __name__ == "__main__":
     # test = implication.Implication(diamond.Diamond(formula.Formula(None, "A", None, True, False)), negation.Negation(formula.Formula(None, 'B', None, True, False, None)))
     # test = conjunction.Conjunction(box.Box(box.Box(diamond.Diamond(bi_implication.BiImplication(formula.Formula(None, "A", None, True, False), formula.Formula(None, "A", None, True, False))))), box.Box(box.Box(diamond.Diamond(box.Box(diamond.Diamond(conjunction.Conjunction(formula.Formula(None, "A", None, True, False), negation.Negation(formula.Formula(None, "A", None, True, False)))))))))
 
+    '''
     # PROBLEMSSSS
     test = implication.Implication(
         box.Box(
@@ -306,7 +307,7 @@ if __name__ == "__main__":
                 )
             )
         )
-    )
+    )'''
 
     '''
     test = implication.Implication(
