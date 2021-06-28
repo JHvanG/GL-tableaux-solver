@@ -224,11 +224,11 @@ class Solver(object):
 
     # This is the main function of the solver which negates the input formula and determines the validity
     def solve_formula(self, form):
-        print(form.convert_to_string())
-        print(form.get_length())
+        #print(form.convert_to_string())
+        #print(form.get_length())
 
         #start_time = timeit.default_timer()
-        tracemalloc.start()
+        #tracemalloc.start()
 
         self.applied_rules.append([])
         self.relations.append([])
@@ -239,20 +239,20 @@ class Solver(object):
         #else:
         #    print("valid formula")
 
-        current, peak = tracemalloc.get_traced_memory()
+        #current, peak = tracemalloc.get_traced_memory()
         #time = timeit.default_timer() - start_time
         #length = form.get_length()
 
-        #if not self.open_branch:
+        if not self.open_branch:
             #print(form.convert_to_tweet())
             #self.data_handler.write_memory_data([length, peak])
             #self.data_handler.write_time_data([length, time])
             #self.data_handler.write_tautology([length, form.convert_to_string()])
-            #self.tweeter.tweet_tautology(form)
+            self.tweeter.tweet_tautology(form)
 
-        print(peak)
+        #print(peak)
 
-        tracemalloc.stop()
+        #tracemalloc.stop()
 
         self.reset()
 
